@@ -1,12 +1,10 @@
-import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
-
 interface TTSRequest {
   text: string;
 }
 
-const client = new ElevenLabsClient({
-  apiKey: process.env.ELEVENLABS_API_KEY,
-});
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+// Use the default voice ID for consistency
+const VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel voice
 
 export async function POST(request: Request) {
   console.log('🔊 [TTS] POST received');
@@ -19,34 +17,44 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Missing text' }, { status: 400 });
     }
 
-    if (!process.env.ELEVENLABS_API_KEY) {
+    if (!ELEVENLABS_API_KEY) {
       console.log('❌ [TTS] ElevenLabs API key not configured');
       return Response.json({ error: 'TTS service not configured' }, { status: 500 });
     }
 
     console.log('🔊 [TTS] Generating speech for text length:', text.length);
 
-    // Use ElevenLabs API to generate speech
-    const audioStream = await client.textToSpeech.convert('Sarah', {
-      text,
-      modelId: 'eleven_monolingual_v1',
+    // Call ElevenLabs REST API directly
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': ELEVENLABS_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_monolingual_v1',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+        },
+      }),
     });
 
-    // Convert ReadableStream to buffer
-    const reader = audioStream.getReader();
-    const chunks: Uint8Array[] = [];
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-      }
-    } finally {
-      reader.releaseLock();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ [TTS] ElevenLabs API error:', response.status, errorText);
+      return Response.json(
+        {
+          error: 'ElevenLabs API failed',
+          details: `Status ${response.status}: ${errorText.substring(0, 200)}`,
+          timestamp: new Date().toISOString(),
+        },
+        { status: response.status }
+      );
     }
 
-    const audioBuffer = Buffer.concat(chunks.map(c => Buffer.from(c)));
+    const audioBuffer = await response.arrayBuffer();
     console.log('✅ [TTS] Audio generated, size:', audioBuffer.byteLength);
 
     return new Response(audioBuffer, {
