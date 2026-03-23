@@ -227,6 +227,107 @@ export default function ResultsPage() {
                   )}
                 </div>
               </div>
+
+              {/* Objection Handling (10 pts) */}
+              <div className="bg-slate-800/40 border border-slate-700 rounded-lg p-4 sm:p-6 backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-4">
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-lg font-bold">Objection Handling</h3>
+                    <p className="text-xs text-slate-400">Recovery & persuasion</p>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-400 whitespace-nowrap">{latestMetrics.objectionScore}/10</div>
+                </div>
+                <div className="space-y-2 text-xs sm:text-sm">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-slate-400">Objections Raised</span>
+                    <span className="text-slate-300 whitespace-nowrap">{latestMetrics.objectionsRaised}</span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-slate-400">Objections Handled</span>
+                    <span className={`whitespace-nowrap ${latestMetrics.objectionsHandled > 0 ? 'text-green-400 font-bold' : 'text-slate-400'}`}>
+                      {latestMetrics.objectionsHandled}
+                    </span>
+                  </div>
+                  {latestMetrics.objectionsRaised > 0 && (
+                    <div className="flex justify-between gap-2 pt-2 border-t border-slate-700">
+                      <span className="text-slate-400">Success Rate</span>
+                      <span className="text-slate-300 whitespace-nowrap">
+                        {Math.round((latestMetrics.objectionsHandled / latestMetrics.objectionsRaised) * 100)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Closing Execution (10 pts) */}
+              <div className="bg-slate-800/40 border border-slate-700 rounded-lg p-4 sm:p-6 backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-4">
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-lg font-bold">Closing Execution</h3>
+                    <p className="text-xs text-slate-400">Next steps & commitment</p>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-bold text-indigo-400 whitespace-nowrap">{latestMetrics.closingScore}/10</div>
+                </div>
+                <div className="space-y-2 text-xs sm:text-sm">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-slate-400">Next Step Confirmed</span>
+                    <span className={`whitespace-nowrap ${latestMetrics.nextStepConfirmed ? 'text-green-400 font-bold' : 'text-red-400'}`}>
+                      {latestMetrics.nextStepConfirmed ? '✓' : '✗'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-slate-400">Calendar Invite</span>
+                    <span className={`whitespace-nowrap ${latestMetrics.calendarInviteAccepted ? 'text-green-400 font-bold' : 'text-slate-500'}`}>
+                      {latestMetrics.calendarInviteAccepted ? '✓' : '—'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-slate-400">Mutual Action Plan</span>
+                    <span className={`whitespace-nowrap ${latestMetrics.mutualActionPlan ? 'text-green-400 font-bold' : 'text-slate-500'}`}>
+                      {latestMetrics.mutualActionPlan ? '✓' : '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Summary Footer */}
+          {latestMetrics && (
+            <div className="bg-gradient-to-r from-slate-800/40 to-slate-900/40 border border-slate-700 rounded-lg p-4 sm:p-6 backdrop-blur-sm mt-8">
+              <h3 className="text-base sm:text-lg font-bold mb-3">Score Summary</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Conversational</span>
+                  <span className="text-orange-400 font-semibold">{latestMetrics.conversationalScore}/25</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Discovery</span>
+                  <span className="text-purple-400 font-semibold">{latestMetrics.discoveryScore}/25</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Empathy</span>
+                  <span className="text-green-400 font-semibold">{latestMetrics.empathyScore}/20</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Persona</span>
+                  <span className="text-blue-400 font-semibold">{latestMetrics.personaAlignmentScore}/10</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Objections</span>
+                  <span className="text-blue-400 font-semibold">{latestMetrics.objectionScore}/10</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Closing</span>
+                  <span className="text-indigo-400 font-semibold">{latestMetrics.closingScore}/10</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
+                <span className="text-slate-400 font-semibold">TOTAL</span>
+                <span className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-purple-400">
+                  {latestMetrics.totalScore}
+                </span>
+              </div>
             </div>
           )}
         </div>
