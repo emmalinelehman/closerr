@@ -1,13 +1,17 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useCallStore } from '@/lib/state/callStore';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useCallHistory } from '@/hooks/useCallHistory';
 
 export default function ResultsPage() {
   const router = useRouter();
   const store = useCallStore();
+  const { saveCall } = useCallHistory();
+  const savedRef = useRef(false);
 
   const personaName = store.personaName;
   const personaTitle = store.personaTitle;
@@ -15,7 +19,30 @@ export default function ResultsPage() {
   const latestMetrics = store.finalScorecard;
   const latestApiMetrics = store.callMetrics[store.callMetrics.length - 1];
 
+  // Save call to history on mount
+  useEffect(() => {
+    if (savedRef.current) return;
+    if (latestMetrics && !latestMetrics.totalScore) return;
+
+    if (latestMetrics) {
+      savedRef.current = true;
+      const transcript = messages.map(m => `${m.speaker === 'user' ? 'You' : 'AI'}: ${m.text}`).join('\n\n');
+
+      saveCall({
+        id: `call-${Date.now()}`,
+        personaId: store.personaId,
+        personaName,
+        personaTitle,
+        score: latestMetrics.totalScore,
+        duration: latestMetrics.duration,
+        date: Date.now(),
+        transcript,
+      });
+    }
+  }, [latestMetrics, messages, store.personaId, personaName, personaTitle, saveCall]);
+
   const handleNewCall = () => {
+    store.resetCall();
     router.push('/');
   };
 
@@ -37,14 +64,22 @@ export default function ResultsPage() {
               Session with {personaName || 'Unknown'} • {personaTitle || ''}
             </p>
           </div>
-          <Button
-            onClick={handleNewCall}
-            variant="outline"
-            className="flex items-center gap-2 whitespace-nowrap"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            New Call
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              onClick={() => router.push('/dashboard')}
+              variant="outline"
+              className="flex items-center gap-2 whitespace-nowrap"
+            >
+              Dashboard
+            </Button>
+            <Button
+              onClick={handleNewCall}
+              className="flex items-center gap-2 whitespace-nowrap bg-orange-600 hover:bg-orange-700"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              New Call
+            </Button>
+          </div>
         </div>
 
         {/* Overall Score */}
