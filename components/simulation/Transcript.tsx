@@ -27,7 +27,7 @@ export default function Transcript({ messages }: TranscriptProps) {
         {messages.map((message, idx) => (
           <div key={idx} className={`flex ${message.speaker === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
-              className={`max-w-xs px-4 py-3 rounded-lg text-sm leading-relaxed ${
+              className={`max-w-xs sm:max-w-sm px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm leading-relaxed break-words ${
                 message.speaker === 'user'
                   ? 'bg-orange-600/30 text-orange-100 border border-orange-500/30'
                   : 'bg-slate-700/50 text-slate-200 border border-slate-600'
