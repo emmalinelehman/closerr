@@ -1,60 +1,64 @@
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
+
 interface TTSRequest {
   text: string;
 }
 
+const client = new ElevenLabsClient({
+  apiKey: process.env.ELEVENLABS_API_KEY,
+});
+
 export async function POST(request: Request) {
-  console.log('🔊 [BACKEND] /api/tts POST received');
+  console.log('🔊 [TTS] POST received');
   try {
     const body: TTSRequest = await request.json();
     const { text } = body;
 
-    console.log('🔊 [BACKEND] TTS Request:', {
-      textLength: text?.length,
-    });
-
-    if (!text) {
-      console.log('❌ [BACKEND] Missing text');
+    if (!text?.trim()) {
+      console.log('❌ [TTS] Missing or empty text');
       return Response.json({ error: 'Missing text' }, { status: 400 });
     }
 
-    // Truncate to max 200 characters to avoid URL length issues
-    const truncatedText = text.length > 200 ? text.substring(0, 200) + '...' : text;
-    console.log('🔊 [BACKEND] Truncated text:', truncatedText.substring(0, 50));
-
-    // Use Google Translate's TTS endpoint (free, no key needed)
-    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(truncatedText)}&tl=en&client=tw-ob`;
-    console.log('🔊 [BACKEND] URL length:', url.length);
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
-
-    if (!response.ok) {
-      console.log('❌ [BACKEND] Google Translate TTS failed with status:', response.status);
-      console.log('❌ [BACKEND] Response headers:', Object.fromEntries(response.headers));
-      const errorText = await response.text();
-      console.log('❌ [BACKEND] Error response:', errorText.substring(0, 200));
-      throw new Error(`TTS service failed: ${response.status}`);
+    if (!process.env.ELEVENLABS_API_KEY) {
+      console.log('❌ [TTS] ElevenLabs API key not configured');
+      return Response.json({ error: 'TTS service not configured' }, { status: 500 });
     }
 
-    const audioBuffer = await response.arrayBuffer();
-    console.log('✅ [BACKEND] Audio generated, size:', audioBuffer.byteLength);
+    console.log('🔊 [TTS] Generating speech for text length:', text.length);
+
+    // Use ElevenLabs API to generate speech
+    const audioStream = await client.textToSpeech.convert('Sarah', {
+      text,
+      modelId: 'eleven_monolingual_v1',
+    });
+
+    // Convert ReadableStream to buffer
+    const reader = audioStream.getReader();
+    const chunks: Uint8Array[] = [];
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    const audioBuffer = Buffer.concat(chunks.map(c => Buffer.from(c)));
+    console.log('✅ [TTS] Audio generated, size:', audioBuffer.byteLength);
 
     return new Response(audioBuffer, {
       headers: {
         'Content-Type': 'audio/mpeg',
         'Content-Length': audioBuffer.byteLength.toString(),
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Accept-Ranges': 'bytes',
       },
     });
   } catch (error) {
-    console.error('❌ [BACKEND] TTS API error:', error);
+    console.error('❌ [TTS] Error:', error);
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    console.error('❌ [BACKEND] Error details:', errorMsg);
     return Response.json(
       {
         error: 'Failed to generate speech',

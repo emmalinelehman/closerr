@@ -12,16 +12,17 @@ export default function ResultsPage() {
   const personaName = store.personaName;
   const personaTitle = store.personaTitle;
   const messages = store.callMessages;
-  const latestMetrics = store.callMetrics[store.callMetrics.length - 1];
+  const latestMetrics = store.finalScorecard;
+  const latestApiMetrics = store.callMetrics[store.callMetrics.length - 1];
 
   const handleNewCall = () => {
     router.push('/');
   };
 
   const sentimentColor =
-    latestMetrics?.sentiment === 'Positive'
+    latestApiMetrics?.sentiment === 'Positive'
       ? 'text-green-400'
-      : latestMetrics?.sentiment === 'Negative'
+      : latestApiMetrics?.sentiment === 'Negative'
         ? 'text-red-400'
         : 'text-slate-400';
 
@@ -101,8 +102,8 @@ export default function ResultsPage() {
                 <div className="space-y-2 text-xs sm:text-sm">
                   <div className="flex justify-between gap-2">
                     <span className="text-slate-400">Talk-to-Listen Ratio</span>
-                    <span className={`whitespace-nowrap ${latestMetrics.talkToListen > 65 || latestMetrics.talkToListen < 35 ? 'text-red-400' : 'text-green-400'}`}>
-                      {latestMetrics.talkToListen}% {latestMetrics.talkToListen > 65 || latestMetrics.talkToListen < 35 ? '⚠️' : '✓'}
+                    <span className={`whitespace-nowrap ${(latestMetrics.talkRatio * 100) > 65 || (latestMetrics.talkRatio * 100) < 35 ? 'text-red-400' : 'text-green-400'}`}>
+                      {Math.round(latestMetrics.talkRatio * 100)}% {(latestMetrics.talkRatio * 100) > 65 || (latestMetrics.talkRatio * 100) < 35 ? '⚠️' : '✓'}
                     </span>
                   </div>
                   <div className="flex justify-between gap-2">
@@ -218,10 +219,12 @@ export default function ResultsPage() {
                       </span>
                     </div>
                   )}
-                  <div className="flex justify-between gap-2 mt-2 pt-2 border-t border-slate-700">
-                    <span className="text-slate-400">Sentiment</span>
-                    <span className={`whitespace-nowrap ${sentimentColor}`}>{latestMetrics.sentiment}</span>
-                  </div>
+                  {latestApiMetrics && (
+                    <div className="flex justify-between gap-2 mt-2 pt-2 border-t border-slate-700">
+                      <span className="text-slate-400">Sentiment</span>
+                      <span className={`whitespace-nowrap ${sentimentColor}`}>{latestApiMetrics.sentiment}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

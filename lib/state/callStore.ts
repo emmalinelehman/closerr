@@ -14,6 +14,7 @@ export interface CallMetrics {
   talkRatio: number; // 0-1, target 0.43-0.57
   wpm: number; // target 140-170
   questionCount: number;
+  conversationalScore: number;
 
   // Discovery Depth (25 pts max)
   level1Questions: number; // +1 each
@@ -34,6 +35,7 @@ export interface CallMetrics {
 
   // Persona Alignment (10 pts max)
   personaAlignment: number;
+  personaAlignmentScore: number;
   roiMentioned: boolean; // CFO specific
   speedMentioned: boolean; // Founder specific
   costMentioned: boolean; // SMB specific
@@ -95,6 +97,7 @@ const initialMetrics: CallMetrics = {
   talkRatio: 0,
   wpm: 0,
   questionCount: 0,
+  conversationalScore: 0,
   level1Questions: 0,
   level2Questions: 0,
   level3Questions: 0,
@@ -107,6 +110,7 @@ const initialMetrics: CallMetrics = {
   severeViolations: 0,
   professionismScore: 100,
   personaAlignment: 0,
+  personaAlignmentScore: 0,
   roiMentioned: false,
   speedMentioned: false,
   costMentioned: false,
@@ -297,9 +301,11 @@ export const useCallStore = create<CallState>((set, get) => ({
     score -= state.metrics.severeViolations * 10;
 
     finalMetrics.totalScore = Math.max(0, Math.round(score));
+    finalMetrics.conversationalScore = convScore;
     finalMetrics.discoveryScore = discoveryScore;
     finalMetrics.empathyScore = Math.min(20, empathyScore);
     finalMetrics.personaAlignment = Math.max(0, personaScore);
+    finalMetrics.personaAlignmentScore = Math.max(0, personaScore);
     finalMetrics.objectionScore = objectionScore;
     finalMetrics.closingScore = closingScore;
 
