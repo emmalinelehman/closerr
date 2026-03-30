@@ -280,40 +280,6 @@ export default function VoiceInterface({
           </div>
           <CallTimer duration={store.duration} />
         </div>
-        {productBrief && (
-          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 bg-gradient-to-r from-neutral-800/40 via-emerald-900/10 to-neutral-800/40 border-t border-t-emerald-500/30">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-1 w-1 rounded-full bg-emerald-400"></div>
-              <h4 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Your Context</h4>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
-              <div>
-                <p className="font-semibold text-neutral-400 mb-1">Company</p>
-                <p className="text-neutral-200">{productBrief.company}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-neutral-400 mb-1">Product</p>
-                <p className="text-neutral-200">{productBrief.product}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-neutral-400 mb-1">Pricing</p>
-                <p className="text-orange-400 font-semibold">{productBrief.pricing}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-neutral-400 mb-1">Implementation</p>
-                <p className="text-neutral-200">{productBrief.implementation}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-neutral-400 mb-1">Results</p>
-                <p className="text-neutral-200">{productBrief.results}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-neutral-400 mb-1">Audience</p>
-                <p className="text-neutral-200">{productBrief.audience}</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Error Display */}
@@ -329,6 +295,41 @@ export default function VoiceInterface({
           {/* Left: Persona & Orb */}
           <div className="lg:col-span-1 flex flex-col items-center space-y-4">
             <PersonaDisplay name={personaName} title={personaTitle} />
+
+            {productBrief && (
+              <div className="w-full bg-gradient-to-br from-emerald-500/10 to-neutral-800/40 border-2 border-emerald-500/30 rounded-lg p-3 sm:p-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="h-1 w-1 rounded-full bg-emerald-400"></div>
+                  <h4 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Your Context</h4>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <p className="font-semibold text-neutral-400 mb-0.5">Company</p>
+                    <p className="text-neutral-200 text-xs">{productBrief.company}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-neutral-400 mb-0.5">Product</p>
+                    <p className="text-neutral-200 text-xs">{productBrief.product}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-neutral-400 mb-0.5">Pricing</p>
+                    <p className="text-orange-400 font-semibold text-xs">{productBrief.pricing}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-neutral-400 mb-0.5">Implementation</p>
+                    <p className="text-neutral-200 text-xs">{productBrief.implementation}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-neutral-400 mb-0.5">Results</p>
+                    <p className="text-neutral-200 text-xs">{productBrief.results}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-neutral-400 mb-0.5">Audience</p>
+                    <p className="text-neutral-200 text-xs">{productBrief.audience}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="relative flex items-center justify-center h-48 w-48 sm:h-60 sm:w-60 lg:h-72 lg:w-72">
               {isProcessing && (

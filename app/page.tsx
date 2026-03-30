@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { TrendingUp, Zap, BadgeDollarSign, ArrowRight } from 'lucide-react';
 
 interface Persona {
@@ -130,22 +131,16 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Right: Brutalist ASCII Art Graphic */}
+          {/* Right: Circuit Board Image */}
           <div className="hidden md:flex items-center justify-center">
-            <div className="border-4 border-[#000000] w-full aspect-square flex items-center justify-center bg-[#FAFAFA] p-8" style={{ boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
-              <pre className="font-mono text-[0.6rem] leading-tight text-[#000000] text-center overflow-hidden">
-{`
-  ████████████████████
-  ██          ██
-  ██  AI      ██
-  ██  MINDS   ██
-  ██  SELLING ██
-  ██          ██
-  ████████████████████
-  ██ PERFECT CLOSES ██
-  ████████████████████
-`}
-              </pre>
+            <div className="border-4 border-[#000000] w-full aspect-square overflow-hidden" style={{ boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
+              <Image
+                src="/circuitbw.jpg"
+                alt="Circuit board AI"
+                width={500}
+                height={500}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
