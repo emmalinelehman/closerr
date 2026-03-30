@@ -68,8 +68,13 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      {/* Header with borders and background */}
-      <div className="border-b-4 border-black" style={{ backgroundImage: 'url(/tiles.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      {/* Background */}
+      <div className="fixed inset-0 z-0" style={{ backgroundImage: 'url(/circuitbw.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', pointerEvents: 'none' }}></div>
+
+      {/* Content overlay */}
+      <div className="relative z-10">
+      {/* Header with borders */}
+      <div className="border-b-4 border-black bg-white">
         <div className="max-w-7xl mx-auto px-8 py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
             <h1 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
@@ -121,7 +126,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Calls Section */}
-      <div className="max-w-7xl mx-auto px-8 py-12">
+      <div className="max-w-7xl mx-auto px-8 py-12 bg-white">
         <div className="flex items-center justify-between gap-6 mb-8">
           <h2 className="font-serif text-3xl md:text-4xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
             CALLS
@@ -233,6 +238,7 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
