@@ -67,14 +67,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen text-black" style={{ backgroundImage: 'url(/tiles.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-      {/* Light overlay for readability */}
-      <div className="absolute inset-0 bg-white/30" style={{ pointerEvents: 'none' }}></div>
-
-      {/* Content wrapper */}
-      <div className="relative z-10">
-      {/* Header with borders */}
-      <div className="border-b-4 border-black">
+    <div className="min-h-screen bg-white text-black">
+      {/* Header with borders and background */}
+      <div className="border-b-4 border-black" style={{ backgroundImage: 'url(/tiles.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="max-w-7xl mx-auto px-8 py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
             <h1 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
@@ -238,7 +233,6 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
-      </div>
       </div>
     </div>
   );
