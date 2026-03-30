@@ -165,6 +165,13 @@ const detectLinguisticTriggers = (text: string) => {
     'you\'re probably feeling',
   ];
 
+  const mirroringPatterns = [
+    // Detect when user repeats key prospect words (simple heuristic)
+    'you mention',
+    'you said',
+    'you talked about',
+  ];
+
   const calibratedQuestions = [
     'how would you solve',
     'what\'s the biggest blocker',
@@ -184,19 +191,51 @@ const detectLinguisticTriggers = (text: string) => {
     'trust me',
   ];
 
+  const objectionIndicators = [
+    'concern',
+    'worried about',
+    'hesitant',
+    'not sure',
+    'too expensive',
+    'too costly',
+    'can\'t afford',
+    'don\'t have',
+    'we\'re happy with',
+    'works fine',
+    'no need',
+  ];
+
+  const closingIndicators = [
+    'let\'s schedule',
+    'calendar invite',
+    'can you send',
+    'i\'ll send you',
+    'next week',
+    'next meeting',
+    'set up a call',
+    'let\'s move forward',
+  ];
+
   return {
     hasLabeling: labelingPhrases.some(ph => lower.includes(ph)),
+    hasMirroring: mirroringPatterns.some(ph => lower.includes(ph)),
     hasCalibrated: calibratedQuestions.some(ph => lower.includes(ph)),
     hasPenalty: penaltyPhrases.some(ph => lower.includes(ph)),
     hasSevere: severePenalties.some(ph => lower.includes(ph)),
+    hasObjection: objectionIndicators.some(ph => lower.includes(ph)),
+    hasClosing: closingIndicators.some(ph => lower.includes(ph)),
   };
 };
 
-const calculateWPM = (text: string, duration: number) => {
+const calculateWPM = (messages: Message[], duration: number) => {
   if (duration === 0) return 0;
-  const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+  // Only count user words for WPM
+  const userMessages = messages.filter(m => m.speaker === 'user');
+  const userWordCount = userMessages.reduce((sum, m) => {
+    return sum + m.text.split(/\s+/).filter(w => w.length > 0).length;
+  }, 0);
   const minutes = duration / 60;
-  return Math.round(wordCount / minutes);
+  return Math.round(userWordCount / minutes);
 };
 
 export const useCallStore = create<CallState>((set, get) => ({
@@ -235,13 +274,7 @@ export const useCallStore = create<CallState>((set, get) => ({
     set({
       isCallActive: true,
       startTime: Date.now(),
-      callMessages: [
-        {
-          speaker: 'ai',
-          text: 'Hey there! Thanks for taking the time to chat. I heard great things about your product, but I want to understand how it stacks up against what we\'re currently using. Can you walk me through the key differences?',
-          timestamp: 0,
-        },
-      ],
+      callMessages: [],
     });
   },
 
@@ -271,7 +304,7 @@ export const useCallStore = create<CallState>((set, get) => ({
     score += discoveryScore;
 
     // Tactical Empathy (20 pts)
-    let empathyScore = 20;
+    let empathyScore = 0;
     empathyScore += state.metrics.labelingCount * 5;
     empathyScore += state.metrics.mirroringCount * 3;
     empathyScore += state.metrics.calibratedQCount * 5;
@@ -350,7 +383,26 @@ export const useCallStore = create<CallState>((set, get) => ({
 
         // Linguistic triggers
         if (triggers.hasLabeling) newMetrics.labelingCount += 1;
+        if (triggers.hasMirroring) newMetrics.mirroringCount += 1;
         if (triggers.hasCalibrated) newMetrics.calibratedQCount += 1;
+
+        // Objections and Closing
+        if (triggers.hasObjection) newMetrics.objectionsRaised += 1;
+        if (triggers.hasClosing) {
+          // If closing is achieved and objections were raised, assume they were handled
+          if (newMetrics.objectionsRaised > 0 && newMetrics.objectionsHandled === 0) {
+            newMetrics.objectionsHandled = newMetrics.objectionsRaised;
+          }
+          if (text.includes('schedule') || text.includes('calendar')) {
+            newMetrics.calendarInviteAccepted = true;
+          }
+          if (text.includes('next') || text.includes('move forward')) {
+            newMetrics.nextStepConfirmed = true;
+          }
+          if (text.includes('mutual') || text.includes('action plan')) {
+            newMetrics.mutualActionPlan = true;
+          }
+        }
 
         // Penalties
         if (triggers.hasPenalty) newMetrics.penaltyCount += 1;
@@ -398,10 +450,7 @@ export const useCallStore = create<CallState>((set, get) => ({
       metrics: {
         ...s.metrics,
         duration,
-        wpm: calculateWPM(
-          s.callMessages.map(m => m.text).join(' '),
-          duration
-        ),
+        wpm: calculateWPM(s.callMessages, duration),
         talkRatio: s.metrics.userWords / Math.max(totalWords, 1),
       },
     }));

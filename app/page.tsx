@@ -2,10 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight, TrendingUp, Zap, BadgeDollarSign, Sparkles } from 'lucide-react';
+import { TrendingUp, Zap, BadgeDollarSign, ArrowRight } from 'lucide-react';
 
 interface Persona {
   id: string;
@@ -13,35 +10,51 @@ interface Persona {
   title: string;
   description: string;
   icon: React.ReactNode;
+  accentColor: 'cyan' | 'orange' | 'pink';
 }
 
 const PERSONAS: Persona[] = [
   {
     id: 'skeptical-cfo',
-    name: 'The Skeptical CFO',
+    name: 'SKEPTICAL CFO',
     title: 'Financial Rigor',
     description: 'Demands hard ROI metrics and dismisses emotional appeals. Master financial objection handling.',
-    icon: <TrendingUp className="w-8 h-8" />,
+    icon: <TrendingUp className="w-12 h-12" />,
+    accentColor: 'cyan',
   },
   {
     id: 'busy-founder',
-    name: 'The Busy Founder',
+    name: 'BUSY FOUNDER',
     title: 'High Velocity',
     description: 'Fast-paced, no small talk. Expects direct answers and bottom-line value propositions.',
-    icon: <Zap className="w-8 h-8" />,
+    icon: <Zap className="w-12 h-12" />,
+    accentColor: 'orange',
   },
   {
     id: 'price-sensitive',
-    name: 'SMB Owner',
+    name: 'SMB OWNER',
     title: 'Budget Conscious',
     description: 'Cost-focused and concerned about immediate overhead impact. Navigate pricing objections.',
-    icon: <BadgeDollarSign className="w-8 h-8" />,
+    icon: <BadgeDollarSign className="w-12 h-12" />,
+    accentColor: 'pink',
   },
 ];
+
+const getAccentClasses = (color: 'cyan' | 'orange' | 'pink') => {
+  switch (color) {
+    case 'cyan':
+      return { bg: 'bg-[#00E5FF]', text: 'text-[#00E5FF]', style: { backgroundColor: '#00E5FF' } };
+    case 'orange':
+      return { bg: 'bg-[#FF5E00]', text: 'text-[#FF5E00]', style: { backgroundColor: '#FF5E00' } };
+    case 'pink':
+      return { bg: 'bg-[#FF2A85]', text: 'text-[#FF2A85]', style: { backgroundColor: '#FF2A85' } };
+  }
+};
 
 export default function Home() {
   const router = useRouter();
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
+  const [hoveredPersona, setHoveredPersona] = useState<string | null>(null);
 
   const handleStartSimulation = () => {
     if (selectedPersona) {
@@ -50,146 +63,286 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white font-sans">
-      {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center px-4 py-24 sm:py-40">
-        <div className="text-center max-w-3xl">
-          {/* Top Badge */}
-          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-orange-500/30 bg-orange-500/5">
-            <Sparkles className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-medium text-orange-400">AI-Powered Sales Training</span>
+    <div className="min-h-screen bg-[#FAFAFA] text-[#000000] font-sans" style={{ backgroundColor: '#FAFAFA', color: '#000000' }}>
+      {/* NAVIGATION */}
+      <nav className="border-b-4 border-[#000000] py-6 px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-2xl md:text-3xl font-bold tracking-tighter uppercase font-serif" style={{ letterSpacing: '-0.02em' }}>
+            CLOSERR
+          </div>
+        </div>
+      </nav>
+
+      {/* HERO SECTION */}
+      <section className="border-b-4 border-[#000000] py-12 md:py-24 px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Left: Massive Headline */}
+          <div className="flex flex-col justify-center">
+            <h1
+              className="font-serif font-black tracking-tighter uppercase leading-none mb-6"
+              style={{
+                fontSize: 'clamp(3rem, 12vw, 8rem)',
+                lineHeight: '0.95',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              SELL<br />HARDER
+            </h1>
+            <p className="text-lg md:text-xl font-medium mb-8 max-w-md leading-tight">
+              Practice against realistic AI buyers. Get real-time feedback. Crush your closes.
+            </p>
+
+            {/* CTA Button - Massive Hot Pink */}
+            <button
+              onClick={handleStartSimulation}
+              disabled={!selectedPersona}
+              className="border-4 border-[#000000] w-full md:w-auto font-serif font-black text-lg uppercase px-8 py-6 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: selectedPersona ? '#FF2A85' : '#FAFAFA',
+                color: selectedPersona ? '#FAFAFA' : '#000000',
+                boxShadow: selectedPersona ? '8px 8px 0px 0px rgba(0,0,0,1)' : 'none',
+              }}
+              onMouseDown={(e) => {
+                if (selectedPersona) {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(8px, 8px)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                }
+              }}
+              onMouseUp={(e) => {
+                if (selectedPersona) {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '8px 8px 0px 0px rgba(0,0,0,1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedPersona) {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '8px 8px 0px 0px rgba(0,0,0,1)';
+                }
+              }}
+            >
+              {selectedPersona ? 'START SIMULATOR' : 'SELECT A PERSONA'}
+            </button>
           </div>
 
-          {/* Main Title */}
-          <h1 className="text-6xl sm:text-8xl font-bold mb-6 tracking-tight bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">
-            Closerr
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-xl sm:text-2xl text-slate-300 mb-3 font-medium">
-            Master Sales Conversations with AI
-          </p>
-
-          {/* Description */}
-          <p className="text-base sm:text-lg text-slate-400 max-w-2xl">
-            Practice objection handling against realistic buyer personas. Get detailed performance metrics and level up your closing rate.
-          </p>
+          {/* Right: Visual Element */}
+          <div className="hidden md:flex items-center justify-center">
+            <div className="border-4 border-[#000000] w-full aspect-square flex items-center justify-center bg-[#FAFAFA]" style={{ boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
+              <div className="text-6xl font-bold opacity-10">AI</div>
+            </div>
+          </div>
         </div>
-
-        {/* Hero Glow Line */}
-        <div className="mt-12 h-1 w-32 bg-gradient-to-r from-transparent via-orange-500 to-transparent rounded-full opacity-60" />
       </section>
 
-      {/* Persona Selection Section */}
-      <section className="px-4 py-20 max-w-6xl mx-auto">
-        {/* Section Header */}
-        <div className="mb-14">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4">Select Target Persona</h2>
-          <p className="text-base text-slate-400 max-w-2xl">
-            Each buyer profile presents distinct objection types and decision criteria. Choose one to begin your training module.
-          </p>
-        </div>
+      {/* PERSONA DOSSIERS - BENTO BOX LAYOUT */}
+      <section className="border-b-4 border-[#000000] py-12 md:py-24 px-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter mb-12" style={{ letterSpacing: '-0.02em' }}>
+            CHOOSE YOUR OPPONENT
+          </h2>
 
-        {/* Persona Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
-          {PERSONAS.map((persona) => {
-            const isSelected = selectedPersona === persona.id;
-            return (
-              <Card
-                key={persona.id}
-                onClick={() => setSelectedPersona(persona.id)}
-                className={`group relative p-8 cursor-pointer transition-all duration-300 border rounded-lg overflow-hidden ${
-                  isSelected
-                    ? 'border-orange-500 bg-slate-900 text-white'
-                    : 'border-slate-700 bg-slate-800/40 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60'
-                }`}
-                style={
-                  isSelected
-                    ? { boxShadow: '0 0 24px rgba(249, 115, 22, 0.25)' }
-                    : {}
-                }
-              >
-                {/* Background Gradient (on hover for unselected, always for selected) */}
-                {isSelected && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent pointer-events-none" />
-                )}
-
-                {/* Content */}
-                <div className="relative z-10">
-                  {/* Icon */}
-                  <div
-                    className={`mb-5 inline-flex p-3 rounded-lg ${
-                      isSelected
-                        ? 'bg-orange-500/20 text-orange-400'
-                        : 'bg-slate-700/50 text-slate-400 group-hover:text-slate-300'
-                    } transition-all duration-300`}
-                  >
-                    {persona.icon}
-                  </div>
-
-                  {/* Title & Subtitle */}
-                  <h3 className={`text-xl font-bold mb-1 ${isSelected ? 'text-white' : 'text-slate-200'}`}>
-                    {persona.name}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* Card 1 - CYAN - Large */}
+            <div
+              className="md:col-span-6 border-4 border-[#000000] p-8 md:p-12 cursor-pointer transition-all duration-150"
+              onClick={() => setSelectedPersona(PERSONAS[0].id)}
+              onMouseEnter={() => setHoveredPersona(PERSONAS[0].id)}
+              onMouseLeave={() => setHoveredPersona(null)}
+              style={{
+                backgroundColor: selectedPersona === PERSONAS[0].id ? '#00E5FF' : '#FAFAFA',
+                boxShadow: selectedPersona === PERSONAS[0].id || hoveredPersona === PERSONAS[0].id ? '8px 8px 0px 0px rgba(0,0,0,1)' : 'none',
+                transform: hoveredPersona === PERSONAS[0].id && selectedPersona !== PERSONAS[0].id ? 'translate(-4px, -4px)' : 'translate(0, 0)',
+              }}
+            >
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h3 className="font-serif text-2xl md:text-3xl font-black uppercase tracking-tight mb-1" style={{ letterSpacing: '-0.01em' }}>
+                    {PERSONAS[0].name}
                   </h3>
-                  <p
-                    className={`text-xs font-semibold mb-4 ${
-                      isSelected ? 'text-orange-400' : 'text-slate-500'
-                    }`}
-                  >
-                    {persona.title.toUpperCase()}
+                  <p className="font-mono text-sm uppercase font-bold tracking-wider">
+                    {PERSONAS[0].title}
                   </p>
-
-                  {/* Description */}
-                  <p
-                    className={`text-sm leading-relaxed mb-5 ${
-                      isSelected ? 'text-slate-200' : 'text-slate-400'
-                    }`}
-                  >
-                    {persona.description}
-                  </p>
-
-                  {/* Selected Badge */}
-                  {isSelected && (
-                    <Badge className="bg-orange-600 text-white hover:bg-orange-700 border-0">
-                      <Zap className="w-3 h-3 mr-1.5" />
-                      Selected
-                    </Badge>
-                  )}
                 </div>
-              </Card>
-            );
-          })}
-        </div>
+                <div className="text-4xl md:text-5xl" style={{ color: selectedPersona === PERSONAS[0].id ? '#FAFAFA' : '#000000' }}>
+                  {PERSONAS[0].icon}
+                </div>
+              </div>
+              <p className={`text-base leading-tight ${selectedPersona === PERSONAS[0].id ? 'text-[#FAFAFA]' : 'text-[#000000]'}`}>
+                {PERSONAS[0].description}
+              </p>
+              {selectedPersona === PERSONAS[0].id && (
+                <div className="mt-6 border-t-2 border-current pt-4">
+                  <div className="font-mono text-xs uppercase font-bold tracking-widest">✓ SELECTED</div>
+                </div>
+              )}
+            </div>
 
-        {/* Call to Action */}
-        <div className="flex flex-col items-center gap-6">
-          <Button
-            onClick={handleStartSimulation}
-            disabled={!selectedPersona}
-            size="lg"
-            className={`px-10 py-6 text-base font-semibold transition-all duration-300 flex items-center gap-2 ${
-              selectedPersona
-                ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/40 hover:shadow-orange-600/60'
-                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-            }`}
-          >
-            Start Training
-            <ArrowRight className="w-5 h-5" />
-          </Button>
-          <p className="text-sm text-slate-500">
-            {selectedPersona
-              ? '⚡ Ready to begin'
-              : 'Select a persona to continue'}
-          </p>
+            {/* Card 2 - ORANGE - Medium */}
+            <div
+              className="md:col-span-3 border-4 border-[#000000] p-8 cursor-pointer transition-all duration-150"
+              onClick={() => setSelectedPersona(PERSONAS[1].id)}
+              onMouseEnter={() => setHoveredPersona(PERSONAS[1].id)}
+              onMouseLeave={() => setHoveredPersona(null)}
+              style={{
+                backgroundColor: selectedPersona === PERSONAS[1].id ? '#FF5E00' : '#FAFAFA',
+                boxShadow: selectedPersona === PERSONAS[1].id || hoveredPersona === PERSONAS[1].id ? '8px 8px 0px 0px rgba(0,0,0,1)' : 'none',
+                transform: hoveredPersona === PERSONAS[1].id && selectedPersona !== PERSONAS[1].id ? 'translate(-4px, -4px)' : 'translate(0, 0)',
+              }}
+            >
+              <div className="flex flex-col items-center text-center mb-4">
+                <div className="text-4xl mb-3" style={{ color: selectedPersona === PERSONAS[1].id ? '#FAFAFA' : '#000000' }}>
+                  {PERSONAS[1].icon}
+                </div>
+                <h3 className="font-serif text-xl font-black uppercase tracking-tight" style={{ letterSpacing: '-0.01em', color: selectedPersona === PERSONAS[1].id ? '#FAFAFA' : '#000000' }}>
+                  {PERSONAS[1].name}
+                </h3>
+                <p className="font-mono text-xs uppercase font-bold tracking-wider mt-2" style={{ color: selectedPersona === PERSONAS[1].id ? '#FAFAFA' : '#000000' }}>
+                  {PERSONAS[1].title}
+                </p>
+              </div>
+              <p className={`text-sm leading-tight text-center ${selectedPersona === PERSONAS[1].id ? 'text-[#FAFAFA]' : 'text-[#000000]'}`}>
+                {PERSONAS[1].description}
+              </p>
+              {selectedPersona === PERSONAS[1].id && (
+                <div className="mt-4 text-center border-t-2 border-current pt-3">
+                  <div className="font-mono text-xs uppercase font-bold tracking-widest">✓ SELECTED</div>
+                </div>
+              )}
+            </div>
+
+            {/* Card 3 - PINK - Medium */}
+            <div
+              className="md:col-span-3 border-4 border-[#000000] p-8 cursor-pointer transition-all duration-150"
+              onClick={() => setSelectedPersona(PERSONAS[2].id)}
+              onMouseEnter={() => setHoveredPersona(PERSONAS[2].id)}
+              onMouseLeave={() => setHoveredPersona(null)}
+              style={{
+                backgroundColor: selectedPersona === PERSONAS[2].id ? '#FF2A85' : '#FAFAFA',
+                boxShadow: selectedPersona === PERSONAS[2].id || hoveredPersona === PERSONAS[2].id ? '8px 8px 0px 0px rgba(0,0,0,1)' : 'none',
+                transform: hoveredPersona === PERSONAS[2].id && selectedPersona !== PERSONAS[2].id ? 'translate(-4px, -4px)' : 'translate(0, 0)',
+              }}
+            >
+              <div className="flex flex-col items-center text-center mb-4">
+                <div className="text-4xl mb-3" style={{ color: selectedPersona === PERSONAS[2].id ? '#FAFAFA' : '#000000' }}>
+                  {PERSONAS[2].icon}
+                </div>
+                <h3 className="font-serif text-xl font-black uppercase tracking-tight" style={{ letterSpacing: '-0.01em', color: selectedPersona === PERSONAS[2].id ? '#FAFAFA' : '#000000' }}>
+                  {PERSONAS[2].name}
+                </h3>
+                <p className="font-mono text-xs uppercase font-bold tracking-wider mt-2" style={{ color: selectedPersona === PERSONAS[2].id ? '#FAFAFA' : '#000000' }}>
+                  {PERSONAS[2].title}
+                </p>
+              </div>
+              <p className={`text-sm leading-tight text-center ${selectedPersona === PERSONAS[2].id ? 'text-[#FAFAFA]' : 'text-[#000000]'}`}>
+                {PERSONAS[2].description}
+              </p>
+              {selectedPersona === PERSONAS[2].id && (
+                <div className="mt-4 text-center border-t-2 border-current pt-3">
+                  <div className="font-mono text-xs uppercase font-bold tracking-widest">✓ SELECTED</div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800/50 mt-24 py-8 bg-slate-900/20">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-slate-500 text-sm">
-            Closerr • Premium AI Sales Training • v1.0
-          </p>
+      {/* FEATURES SECTION - Magazine Spread */}
+      <section className="border-b-4 border-[#000000] py-12 md:py-24 px-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter mb-12" style={{ letterSpacing: '-0.02em' }}>
+            WHY CLOSERR WINS
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Feature 1 */}
+            <div className="border-4 border-[#000000] p-8" style={{ boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
+              <h3 className="font-serif text-2xl font-black uppercase mb-3" style={{ letterSpacing: '-0.01em' }}>
+                REAL-TIME METRICS
+              </h3>
+              <p className="text-sm leading-tight">
+                Track talk ratio, pacing, empathy, and objection handling. Every second counts.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div
+              className="border-4 border-[#000000] p-8"
+              style={{ backgroundColor: '#00E5FF', boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}
+            >
+              <h3 className="font-serif text-2xl font-black uppercase mb-3" style={{ letterSpacing: '-0.01em' }}>
+                AI COACHING
+              </h3>
+              <p className="text-sm leading-tight">
+                Get personalized feedback powered by the same AI that beats top closers.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div
+              className="border-4 border-[#000000] p-8"
+              style={{ backgroundColor: '#FF5E00', boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}
+            >
+              <h3 className="font-serif text-2xl font-black uppercase mb-3" style={{ letterSpacing: '-0.01em' }}>
+                REALISTIC BUYERS
+              </h3>
+              <p className="text-sm leading-tight">
+                Three distinct personas that respond naturally to your actual sales approach.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FINAL CTA SECTION */}
+      <section className="py-12 md:py-24 px-8">
+        <div className="max-w-7xl mx-auto border-4 border-[#000000] p-12 md:p-16" style={{ boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
+          <div className="text-center">
+            <h2 className="font-serif text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6" style={{ letterSpacing: '-0.02em' }}>
+              TIME TO TRAIN
+            </h2>
+            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
+              Stop practicing with colleagues who go easy on you. Start practicing with AI that doesn't.
+            </p>
+
+            <button
+              onClick={handleStartSimulation}
+              disabled={!selectedPersona}
+              className="border-4 border-[#000000] font-serif font-black text-lg uppercase px-12 py-8 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-4"
+              style={{
+                backgroundColor: selectedPersona ? '#FF2A85' : '#FAFAFA',
+                color: selectedPersona ? '#FAFAFA' : '#000000',
+                boxShadow: selectedPersona ? '8px 8px 0px 0px rgba(0,0,0,1)' : 'none',
+              }}
+              onMouseDown={(e) => {
+                if (selectedPersona) {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(8px, 8px)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                }
+              }}
+              onMouseUp={(e) => {
+                if (selectedPersona) {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '8px 8px 0px 0px rgba(0,0,0,1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedPersona) {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '8px 8px 0px 0px rgba(0,0,0,1)';
+                }
+              }}
+            >
+              {selectedPersona ? 'LET\'S GO' : 'SELECT A PERSONA FIRST'}
+              <ArrowRight className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t-4 border-[#000000] py-8 px-8">
+        <div className="max-w-7xl mx-auto text-center font-mono text-xs uppercase font-bold tracking-widest">
+          CLOSERR © 2024 | AI SALES TRAINING
         </div>
       </footer>
     </div>

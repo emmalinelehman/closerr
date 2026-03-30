@@ -91,10 +91,69 @@ export default function VoiceInterface({
     }
   }, [recordingError]);
 
+  // Update metrics every 500ms while call is active
+  useEffect(() => {
+    if (!store.isCallActive) return;
+
+    const interval = setInterval(() => {
+      store.updateMetrics();
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [store.isCallActive, store]);
+
   const handleStartCall = async () => {
     console.log('▶️ [UI] Starting call');
     store.startCall();
     setError(null);
+    setIsAudioPlaying(true);
+
+    try {
+      // Fetch initial greeting
+      console.log('👋 [UI] Fetching greeting');
+      const greetingResponse = await fetch('/api/greeting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personaId,
+          personaName,
+        }),
+      });
+
+      if (!greetingResponse.ok) {
+        throw new Error('Failed to fetch greeting');
+      }
+
+      const { greeting } = await greetingResponse.json();
+      console.log('👋 [UI] Got greeting:', greeting);
+
+      // Convert greeting to speech
+      const ttsResponse = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: greeting }),
+      });
+
+      if (!ttsResponse.ok) {
+        throw new Error('Failed to generate speech for greeting');
+      }
+
+      const audioBlob = await ttsResponse.blob();
+      console.log('👋 [UI] Playing greeting');
+      await playAudioBlob(audioBlob);
+
+      // Add greeting to conversation history and store
+      store.addMessage('ai', greeting);
+      setConversationHistory([{ role: 'assistant', content: greeting }]);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error('❌ [UI] Greeting error:', errorMsg);
+      setError(errorMsg);
+    } finally {
+      setIsAudioPlaying(false);
+    }
+
+    // Start recording after greeting finishes
     await startRecording();
   };
 
@@ -153,24 +212,29 @@ export default function VoiceInterface({
       store.addMetrics(responseMetrics);
       setConversationHistory([...newHistory, { role: 'assistant', content: aiReply }]);
 
-      console.log('🔊 [UI] Calling /api/tts');
-      const ttsResponse = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: aiReply }),
-      });
-
-      if (!ttsResponse.ok) {
-        throw new Error(`TTS API failed: ${ttsResponse.statusText}`);
-      }
-
-      const audioBlob = await ttsResponse.blob();
-      console.log('🎵 [UI] Audio blob received:', audioBlob.size, 'bytes');
-
-      console.log('▶️ [UI] Playing audio');
+      console.log('🔊 [UI] Calling TTS API for ElevenLabs');
       setIsAudioPlaying(true);
-      await playAudioBlob(audioBlob);
-      setIsAudioPlaying(false);
+
+      try {
+        // Request audio from ElevenLabs via backend
+        const ttsResponse = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: aiReply }),
+        });
+
+        if (!ttsResponse.ok) {
+          const errorData = await ttsResponse.json();
+          console.error('🔊 [UI] TTS API error response:', errorData);
+          throw new Error(`TTS failed: ${errorData.error} - ${errorData.details || ''}`);
+        }
+
+        const audioBlob = await ttsResponse.blob();
+        console.log('✅ [UI] Audio blob received, size:', audioBlob.size);
+        await playAudioBlob(audioBlob);
+      } finally {
+        setIsAudioPlaying(false);
+      }
 
       console.log('✅ [UI] Call complete');
     } catch (err) {
@@ -192,57 +256,60 @@ export default function VoiceInterface({
   };
 
   const sentimentColor = !metrics
-    ? 'bg-slate-700'
+    ? 'bg-neutral-800/40 border-neutral-700 border-l-neutral-600 text-neutral-400'
     : metrics.sentiment === 'Positive'
-      ? 'bg-green-700'
+      ? 'bg-emerald-500/10 border-neutral-700 border-l-emerald-500 text-emerald-100'
       : metrics.sentiment === 'Negative'
-        ? 'bg-red-700'
-        : 'bg-slate-700';
+        ? 'bg-pink-500/10 border-neutral-700 border-l-pink-500 text-pink-100'
+        : 'bg-amber-500/10 border-neutral-700 border-l-amber-500 text-amber-100';
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-red-950 via-rose-950/20 to-orange-950/30">
       {/* Header - Fixed */}
-      <div className="border-b border-slate-800/50 bg-slate-900/40 backdrop-blur-md flex-shrink-0">
-        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4 border-b border-slate-800/30">
+      <div className="border-b border-b-cyan-500/30 bg-gradient-to-r from-neutral-900/40 via-neutral-900/30 to-neutral-900/40 backdrop-blur-md flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-neutral-700/30">
           <div className="flex items-center gap-3 min-w-0">
             <div
               className={`w-2 h-2 rounded-full animate-pulse flex-shrink-0 ${
-                isAudioPlaying ? 'bg-purple-500' : isRecording ? 'bg-orange-500' : 'bg-slate-600'
+                isAudioPlaying ? 'bg-cyan-500' : isRecording ? 'bg-orange-500' : 'bg-neutral-600'
               }`}
             ></div>
-            <span className="text-xs sm:text-sm font-mono text-slate-400 truncate">
+            <span className="text-xs sm:text-sm font-mono text-neutral-400 truncate">
               {isAudioPlaying ? '🔊 SPEAKING' : isProcessing ? '⚙️ PROCESSING' : isRecording ? '🎙️ RECORDING' : 'READY'}
             </span>
           </div>
           <CallTimer duration={store.duration} />
         </div>
         {productBrief && (
-          <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-slate-800/20 border-t border-slate-800/30">
-            <h4 className="text-xs font-semibold text-orange-400 uppercase tracking-wide mb-2">Your Context</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm text-slate-300">
+          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 bg-gradient-to-r from-neutral-800/40 via-emerald-900/10 to-neutral-800/40 border-t border-t-emerald-500/30">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-1 w-1 rounded-full bg-emerald-400"></div>
+              <h4 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Your Context</h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
               <div>
-                <p className="font-semibold text-slate-400 mb-1">Company</p>
-                <p>{productBrief.company}</p>
+                <p className="font-semibold text-neutral-400 mb-1">Company</p>
+                <p className="text-neutral-200">{productBrief.company}</p>
               </div>
               <div>
-                <p className="font-semibold text-slate-400 mb-1">Product</p>
-                <p>{productBrief.product}</p>
+                <p className="font-semibold text-neutral-400 mb-1">Product</p>
+                <p className="text-neutral-200">{productBrief.product}</p>
               </div>
               <div>
-                <p className="font-semibold text-slate-400 mb-1">Pricing</p>
-                <p className="text-orange-300 font-semibold">{productBrief.pricing}</p>
+                <p className="font-semibold text-neutral-400 mb-1">Pricing</p>
+                <p className="text-orange-400 font-semibold">{productBrief.pricing}</p>
               </div>
               <div>
-                <p className="font-semibold text-slate-400 mb-1">Implementation</p>
-                <p>{productBrief.implementation}</p>
+                <p className="font-semibold text-neutral-400 mb-1">Implementation</p>
+                <p className="text-neutral-200">{productBrief.implementation}</p>
               </div>
               <div>
-                <p className="font-semibold text-slate-400 mb-1">Results</p>
-                <p>{productBrief.results}</p>
+                <p className="font-semibold text-neutral-400 mb-1">Results</p>
+                <p className="text-neutral-200">{productBrief.results}</p>
               </div>
               <div>
-                <p className="font-semibold text-slate-400 mb-1">Audience</p>
-                <p>{productBrief.audience}</p>
+                <p className="font-semibold text-neutral-400 mb-1">Audience</p>
+                <p className="text-neutral-200">{productBrief.audience}</p>
               </div>
             </div>
           </div>
@@ -251,8 +318,8 @@ export default function VoiceInterface({
 
       {/* Error Display */}
       {error && (
-        <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 border-b border-red-500/50 bg-red-500/20 backdrop-blur-sm flex-shrink-0">
-          <p className="text-red-300 text-xs sm:text-base font-semibold break-words">🔴 ERROR: {error}</p>
+        <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 border-b border-pink-600/50 bg-pink-600/20 backdrop-blur-sm flex-shrink-0">
+          <p className="text-pink-300 text-xs sm:text-base font-semibold break-words">🔴 ERROR: {error}</p>
         </div>
       )}
 
@@ -266,9 +333,9 @@ export default function VoiceInterface({
             <div className="relative flex items-center justify-center h-48 w-48 sm:h-60 sm:w-60 lg:h-72 lg:w-72">
               {isProcessing && (
                 <>
-                  <div className="absolute inset-0 rounded-full bg-purple-500/20 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full bg-orange-500/20 animate-pulse" />
                   <div
-                    className="absolute inset-8 rounded-full border-2 border-purple-500 animate-pulse"
+                    className="absolute inset-8 rounded-full border-2 border-orange-500 animate-pulse"
                     style={{ animationDelay: '0.2s' }}
                   />
                 </>
@@ -277,15 +344,15 @@ export default function VoiceInterface({
               {isAudioPlaying && (
                 <>
                   <div
-                    className="absolute inset-0 rounded-full border-2 border-purple-400 animate-pulse"
+                    className="absolute inset-0 rounded-full border-2 border-cyan-400 animate-pulse"
                     style={{ animationDelay: '0s' }}
                   />
                   <div
-                    className="absolute inset-4 rounded-full border-2 border-purple-300 animate-pulse"
+                    className="absolute inset-4 rounded-full border-2 border-cyan-500 animate-pulse"
                     style={{ animationDelay: '0.2s' }}
                   />
                   <div
-                    className="absolute inset-8 rounded-full border-2 border-purple-200 animate-pulse"
+                    className="absolute inset-8 rounded-full border-2 border-cyan-600 animate-pulse"
                     style={{ animationDelay: '0.4s' }}
                   />
                 </>
@@ -304,12 +371,12 @@ export default function VoiceInterface({
               <div
                 className={`relative flex items-center justify-center rounded-full transition-all duration-300 z-10 ${
                   isAudioPlaying
-                    ? 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-2xl shadow-purple-500/60 w-32 h-32 sm:w-40 sm:h-40 lg:w-44 lg:h-44'
+                    ? 'bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-2xl shadow-cyan-500/60 w-32 h-32 sm:w-40 sm:h-40 lg:w-44 lg:h-44'
                     : isProcessing
-                      ? 'bg-gradient-to-br from-purple-500 to-indigo-600 shadow-2xl shadow-purple-500/60 w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40'
+                      ? 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-2xl shadow-orange-500/60 w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40'
                       : isRecording
                         ? 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-2xl shadow-orange-500/60 w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40'
-                        : 'bg-gradient-to-br from-slate-800 to-slate-900 shadow-lg shadow-orange-500/20 w-24 h-24 sm:w-32 sm:h-32'
+                        : 'bg-gradient-to-br from-neutral-800 to-neutral-900 shadow-lg shadow-orange-500/20 w-24 h-24 sm:w-32 sm:h-32'
                 }`}
               >
                 {isAudioPlaying ? (
@@ -333,37 +400,43 @@ export default function VoiceInterface({
 
           {/* Center: Transcript */}
           <div className="lg:col-span-1 flex flex-col min-h-0">
-            <h3 className="text-xs sm:text-sm font-mono text-slate-400 mb-3 sm:mb-4 uppercase tracking-wide flex-shrink-0">
-              Conversation
-            </h3>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-1 rounded-full bg-cyan-400"></div>
+              <h3 className="text-xs font-mono text-cyan-400 uppercase tracking-wider font-semibold flex-shrink-0">
+                Conversation
+              </h3>
+            </div>
             <div className="flex-1 overflow-y-auto min-h-0">
               <Transcript messages={store.callMessages} />
             </div>
           </div>
 
           {/* Right: Metrics */}
-          <div className="lg:col-span-1 flex flex-col space-y-3 sm:space-y-4 min-h-0">
-            <h3 className="text-xs sm:text-sm font-mono text-slate-400 uppercase tracking-wide flex-shrink-0">Real-Time Metrics</h3>
+          <div className="lg:col-span-1 flex flex-col space-y-4 min-h-0">
+            <div className="flex items-center gap-2">
+              <div className="h-1 w-1 rounded-full bg-emerald-400"></div>
+              <h3 className="text-xs font-mono text-emerald-400 uppercase tracking-wider font-semibold flex-shrink-0">Real-Time Metrics</h3>
+            </div>
 
-            <div className="space-y-2 sm:space-y-3 flex-1 overflow-y-auto min-h-0">
-              <div className="p-3 sm:p-4 rounded-lg border border-slate-700 bg-slate-800/40 backdrop-blur-sm">
-                <p className="text-xs text-slate-400 uppercase font-mono tracking-wide mb-2">Talk-to-Listen</p>
-                <p className="text-2xl sm:text-3xl font-bold text-white">{metrics?.talkToListen || '—'}%</p>
+            <div className="space-y-3 flex-1 overflow-y-auto min-h-0">
+              <div className="p-4 rounded-lg border border-l-2 border-neutral-700 border-l-amber-500 bg-amber-500/5 backdrop-blur-sm hover:bg-amber-500/10 transition-colors">
+                <p className="text-xs text-amber-400 uppercase font-mono tracking-wide mb-2">Talk-to-Listen</p>
+                <p className="text-3xl font-bold text-amber-100">{metrics?.talkToListen || '—'}%</p>
               </div>
 
-              <div className="p-3 sm:p-4 rounded-lg border border-slate-700 bg-slate-800/40 backdrop-blur-sm">
-                <p className="text-xs text-slate-400 uppercase font-mono tracking-wide mb-2">Pacing (WPM)</p>
-                <p className="text-2xl sm:text-3xl font-bold text-white">{metrics?.wpm || '—'}</p>
+              <div className="p-4 rounded-lg border border-l-2 border-neutral-700 border-l-cyan-500 bg-cyan-500/5 backdrop-blur-sm hover:bg-cyan-500/10 transition-colors">
+                <p className="text-xs text-cyan-400 uppercase font-mono tracking-wide mb-2">Pacing (WPM)</p>
+                <p className="text-3xl font-bold text-cyan-100">{metrics?.wpm || '—'}</p>
               </div>
 
-              <div className={`p-3 sm:p-4 rounded-lg border ${sentimentColor} backdrop-blur-sm`}>
-                <p className="text-xs text-slate-400 uppercase font-mono tracking-wide mb-2">Sentiment</p>
-                <p className="text-xl sm:text-2xl font-bold text-white">{metrics?.sentiment || '—'}</p>
+              <div className={`p-4 rounded-lg border border-l-2 backdrop-blur-sm transition-colors ${sentimentColor}`}>
+                <p className="text-xs uppercase font-mono tracking-wide mb-2">Sentiment</p>
+                <p className="text-2xl font-bold">{metrics?.sentiment || '—'}</p>
               </div>
 
-              <div className="p-3 sm:p-4 rounded-lg border border-slate-700 bg-slate-800/40 backdrop-blur-sm">
-                <p className="text-xs text-slate-400 uppercase font-mono tracking-wide mb-2">Questions</p>
-                <p className="text-2xl sm:text-3xl font-bold text-white">{metrics?.questionCount || 0}</p>
+              <div className="p-4 rounded-lg border border-l-2 border-neutral-700 border-l-pink-500 bg-pink-500/5 backdrop-blur-sm hover:bg-pink-500/10 transition-colors">
+                <p className="text-xs text-pink-400 uppercase font-mono tracking-wide mb-2">Questions</p>
+                <p className="text-3xl font-bold text-pink-100">{metrics?.questionCount || 0}</p>
               </div>
             </div>
           </div>
@@ -371,14 +444,14 @@ export default function VoiceInterface({
       </div>
 
       {/* Bottom Controls - Fixed */}
-      <div className="flex items-center justify-center gap-2 sm:gap-4 px-4 sm:px-6 lg:px-8 py-3 sm:py-6 border-t border-slate-800/50 bg-slate-900/40 backdrop-blur-md flex-shrink-0">
+      <div className="flex items-center justify-center gap-3 sm:gap-4 px-4 sm:px-6 lg:px-8 py-5 sm:py-6 border-t border-t-emerald-500/30 bg-gradient-to-r from-neutral-900/40 via-neutral-900/30 to-neutral-900/40 backdrop-blur-md flex-shrink-0">
         {!store.isCallActive ? (
           <Button
             onClick={handleStartCall}
             size="lg"
-            className="px-6 sm:px-8 bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/40 flex items-center gap-2 text-sm sm:text-base"
+            className="px-7 sm:px-8 bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/40 flex items-center gap-2 text-sm sm:text-base font-semibold transition-all duration-200"
           >
-            <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Mic className="w-5 h-5" />
             <span className="hidden sm:inline">Start Call</span>
             <span className="sm:hidden">Start</span>
           </Button>
@@ -388,19 +461,18 @@ export default function VoiceInterface({
               onClick={handleStop}
               disabled={isProcessing}
               size="lg"
-              className="px-6 sm:px-8 border-orange-500 bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 flex items-center gap-2 text-sm sm:text-base"
+              className="px-7 sm:px-8 border border-orange-500 bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 disabled:opacity-50 flex items-center gap-2 text-sm sm:text-base font-semibold transition-all duration-200"
             >
-              <MicOff className="w-4 h-4 sm:w-5 sm:h-5" />
+              <MicOff className="w-5 h-5" />
               <span className="hidden sm:inline">Stop</span>
               <span className="sm:hidden">Stop</span>
             </Button>
             <Button
               onClick={handleQuickEnd}
               size="lg"
-              variant="destructive"
-              className="px-6 sm:px-8 flex items-center gap-2 text-sm sm:text-base"
+              className="px-7 sm:px-8 bg-pink-600 hover:bg-pink-700 text-white shadow-lg shadow-pink-600/40 flex items-center gap-2 text-sm sm:text-base font-semibold transition-all duration-200"
             >
-              <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Phone className="w-5 h-5" />
               <span className="hidden sm:inline">End</span>
               <span className="sm:hidden">End</span>
             </Button>
@@ -411,19 +483,18 @@ export default function VoiceInterface({
               onClick={handleContinue}
               disabled={isProcessing || isAudioPlaying}
               size="lg"
-              className="px-6 sm:px-8 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/40 flex items-center gap-2 text-sm sm:text-base"
+              className="px-7 sm:px-8 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/40 disabled:opacity-50 flex items-center gap-2 text-sm sm:text-base font-semibold transition-all duration-200"
             >
-              <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Mic className="w-5 h-5" />
               <span className="hidden sm:inline">Continue</span>
               <span className="sm:hidden">Cont.</span>
             </Button>
             <Button
               onClick={handleQuickEnd}
               size="lg"
-              variant="destructive"
-              className="px-6 sm:px-8 flex items-center gap-2 text-sm sm:text-base"
+              className="px-7 sm:px-8 bg-pink-600 hover:bg-pink-700 text-white shadow-lg shadow-pink-600/40 flex items-center gap-2 text-sm sm:text-base font-semibold transition-all duration-200"
             >
-              <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Phone className="w-5 h-5" />
               <span className="hidden sm:inline">End</span>
               <span className="sm:hidden">End</span>
             </Button>
