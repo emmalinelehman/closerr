@@ -67,7 +67,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen text-black" style={{ backgroundImage: 'url(/tiles.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      {/* Light overlay for readability */}
+      <div className="absolute inset-0 bg-white/30" style={{ pointerEvents: 'none' }}></div>
+
+      {/* Content wrapper */}
+      <div className="relative z-10">
       {/* Header with borders */}
       <div className="border-b-4 border-black">
         <div className="max-w-7xl mx-auto px-8 py-8">
@@ -233,6 +238,7 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
