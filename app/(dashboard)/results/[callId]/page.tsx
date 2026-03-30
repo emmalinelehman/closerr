@@ -134,17 +134,15 @@ export default function ResultsPage() {
                 messages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className="border-4 border-[#000000] p-4"
+                    className="border-l-4 pl-4 py-2"
                     style={{
-                      backgroundColor: msg.speaker === 'user' ? '#FF2A85' : '#00E5FF',
-                      color: msg.speaker === 'user' ? '#FAFAFA' : '#000000',
-                      boxShadow: '2px 2px 0px 0px rgba(0,0,0,0.2)',
+                      borderLeftColor: msg.speaker === 'user' ? '#FF2A85' : '#000000',
                     }}
                   >
-                    <p className="font-mono text-xs font-bold uppercase tracking-widest mb-2 opacity-75">
+                    <p className="font-mono text-xs font-bold uppercase tracking-widest text-gray-600 mb-1">
                       {msg.speaker === 'user' ? '👤 You' : '🤖 AI'}
                     </p>
-                    <p className="leading-relaxed">{msg.text}</p>
+                    <p className="leading-relaxed text-sm">{msg.text}</p>
                   </div>
                 ))
               )}
@@ -216,15 +214,15 @@ export default function ResultsPage() {
                 </div>
 
                 {/* Tactical Empathy */}
-                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#00E5FF', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="font-serif text-lg font-black uppercase">Empathy</h3>
-                      <p className="font-mono text-xs text-gray-800 mt-1">Negotiation techniques</p>
+                      <p className="font-mono text-xs text-gray-600 mt-1">Negotiation techniques</p>
                     </div>
                     <span className="text-3xl font-black">{latestMetrics.empathyScore}/20</span>
                   </div>
-                  <div className="space-y-2 border-t-4 border-black pt-4 text-sm">
+                  <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
                     <div className="flex justify-between">
                       <span>Labeling</span>
                       <span className="font-bold">{latestMetrics.labelingCount} × 5pts</span>
@@ -241,15 +239,15 @@ export default function ResultsPage() {
                 </div>
 
                 {/* Persona Alignment */}
-                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FF5E00', color: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="font-serif text-lg font-black uppercase">Persona Alignment</h3>
-                      <p className="font-mono text-xs opacity-75 mt-1">Buyer value drivers</p>
+                      <p className="font-mono text-xs text-gray-600 mt-1">Buyer value drivers</p>
                     </div>
                     <span className="text-3xl font-black">{latestMetrics.personaAlignmentScore}/10</span>
                   </div>
-                  <div className="space-y-2 border-t-4 border-current pt-4 text-sm">
+                  <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
                     {personaName.includes('CFO') && (
                       <div className="flex justify-between">
                         <span>ROI Mentioned</span>
