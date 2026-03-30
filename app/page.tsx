@@ -1,16 +1,97 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { TrendingUp, Zap, BadgeDollarSign, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+
+const animationStyles = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .section-fade-in {
+    animation: fadeInUp 0.8s ease-out;
+  }
+
+  .stagger-1 {
+    animation-delay: 0.1s;
+  }
+
+  .stagger-2 {
+    animation-delay: 0.2s;
+  }
+
+  .stagger-3 {
+    animation-delay: 0.3s;
+  }
+
+  .persona-card {
+    transition: all 0.3s ease;
+  }
+
+  .persona-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 30px rgba(255, 255, 0, 0.7), 0 12px 24px rgba(0, 0, 0, 0.08);
+    border-color: #FFFF00 !important;
+    border-width: 2px;
+  }
+
+  .benefit-card {
+    transition: all 0.3s ease;
+  }
+
+  .benefit-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .button-hover {
+    transition: all 0.2s ease;
+  }
+
+  .button-hover:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .button-hover:not(:disabled):active {
+    transform: translateY(0);
+  }
+
+  .button-hover:not(:disabled):hover {
+    box-shadow: 0 0 30px rgba(255, 255, 0, 0.7) !important;
+    border-color: #FFFF00 !important;
+  }
+`;
 
 interface Persona {
   id: string;
   name: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
 }
 
 const PERSONAS: Persona[] = [
@@ -19,32 +100,37 @@ const PERSONAS: Persona[] = [
     name: 'SKEPTICAL CFO',
     title: 'Financial Rigor',
     description: 'Demands hard ROI metrics and dismisses emotional appeals. Master financial objection handling.',
-    icon: <TrendingUp className="w-12 h-12" />,
   },
   {
     id: 'busy-founder',
     name: 'BUSY FOUNDER',
     title: 'High Velocity',
     description: 'Fast-paced, no small talk. Expects direct answers and bottom-line value propositions.',
-    icon: <Zap className="w-12 h-12" />,
   },
   {
     id: 'price-sensitive',
     name: 'SMB OWNER',
     title: 'Budget Conscious',
     description: 'Cost-focused and concerned about immediate overhead impact. Navigate pricing objections.',
-    icon: <BadgeDollarSign className="w-12 h-12" />,
   },
 ];
-
-const gridPattern = `
-  radial-gradient(circle, #000000 1px, transparent 1px)
-`;
 
 export default function Home() {
   const router = useRouter();
   const [selectedBuyer, setSelectedBuyer] = useState<string | null>(null);
-  const [hoveredPersona, setHoveredPersona] = useState<string | null>(null);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navScale = Math.max(0.6, 1 - scrollY / 500);
+  const navPadding = Math.max(4, 8 - scrollY / 200);
 
   const handleStartSimulation = () => {
     if (selectedBuyer) {
@@ -53,227 +139,157 @@ export default function Home() {
   };
 
   return (
-    <div
-      className="min-h-screen bg-[#FAFAFA] text-[#000000] font-sans overflow-x-hidden"
-      style={{
-        backgroundColor: '#FAFAFA',
-        color: '#000000',
-        backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)`,
-        backgroundSize: '20px 20px',
-      }}
-    >
-      {/* MARQUEE TICKER */}
-      <style>{`
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
-        }
-        .marquee-scroll {
-          animation: scroll 15s linear infinite;
-        }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .spin-slow {
-          animation: spin-slow 8s linear infinite;
-        }
-      `}</style>
-
-      <div className="border-b-4 border-t-4 border-[#000000] bg-[#FF2A85] py-3 overflow-hidden">
-        <div className="flex marquee-scroll whitespace-nowrap">
-          <div className="text-black font-mono font-bold tracking-widest text-lg px-8">
-            • NO MORE EXCUSES • CLOSE MORE DEALS • CRUSH YOUR QUOTA • MASTER THE PITCH • NO MORE EXCUSES • CLOSE MORE DEALS • CRUSH YOUR QUOTA • MASTER THE PITCH •
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-white text-black">
+      <style>{animationStyles}</style>
       {/* NAVIGATION */}
-      <nav className="border-b-4 border-[#000000] py-6 px-8">
+      <nav
+        className="border-b border-gray-300 px-8 md:px-12 fixed top-0 left-0 right-0 bg-white z-50 transition-all duration-300"
+        style={{
+          padding: `${navPadding}px 2rem`,
+        }}
+      >
         <div className="max-w-7xl mx-auto">
-          <div className="text-2xl md:text-3xl font-bold tracking-tighter uppercase font-serif" style={{ letterSpacing: '-0.02em' }}>
+          <div
+            className="font-serif font-bold transition-all duration-300"
+            style={{
+              fontSize: `clamp(1rem, ${3 * navScale}vw, ${2 * navScale}rem)`,
+              transform: `scale(${navScale})`,
+              transformOrigin: 'left',
+            }}
+          >
             CLOSERR
           </div>
         </div>
       </nav>
 
-      {/* HERO SECTION WITH STICKER */}
-      <section className="border-b-4 border-[#000000] py-12 md:py-24 px-8 relative">
-        {/* Spinning Sticker */}
-        <div
-          className="absolute top-8 right-8 border-4 border-[#000000] w-24 h-24 md:w-32 md:h-32 flex items-center justify-center spin-slow"
-          style={{
-            backgroundColor: '#FFD700',
-            boxShadow: '6px 6px 0px 0px rgba(0,0,0,1)',
-          }}
-        >
-          <div className="text-center font-serif font-black text-xs md:text-sm tracking-tighter">
-            100%<br />AI
-          </div>
-        </div>
+      {/* Spacer to prevent content from hiding behind fixed nav */}
+      <div style={{ height: `${navPadding * 2}px` }}></div>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Left: Massive Headline */}
-          <div className="flex flex-col justify-center">
+      {/* HERO SECTION */}
+      <section
+        className="border-b border-gray-300 h-screen px-8 md:px-12 relative animate-fade-in flex items-center mt-16"
+        style={{
+          backgroundImage: 'url(/barbs.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Dark overlay for text contrast */}
+        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="w-full relative z-10">
+          <div className="max-w-2xl">
             <h1
-              className="font-serif font-black tracking-tighter uppercase leading-none mb-6"
+              className="font-serif font-bold leading-tight tracking-tight mb-0"
               style={{
-                fontSize: 'clamp(3rem, 12vw, 8rem)',
-                lineHeight: '0.95',
-                letterSpacing: '-0.02em',
+                fontSize: 'clamp(4rem, 20vw, 12rem)',
+                lineHeight: '0.9',
+                color: '#FFFFFF',
               }}
             >
               SELL<br />
               <span style={{ fontStyle: 'italic' }}>HARDER</span>
             </h1>
-            <p className="text-lg md:text-xl font-medium mb-8 max-w-md leading-tight">
-              Practice against realistic AI buyers. Get real-time feedback. Crush your closes.
-            </p>
-          </div>
-
-          {/* Right: Circuit Board Image */}
-          <div className="hidden md:flex items-center justify-center">
-            <div className="border-4 border-[#000000] w-full aspect-square overflow-hidden" style={{ boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
-              <Image
-                src="/circuitbw.jpg"
-                alt="Circuit board AI"
-                width={500}
-                height={500}
-                className="w-full h-full object-cover"
-              />
-            </div>
           </div>
         </div>
       </section>
 
-      {/* BUYER SELECTION - EQUAL SIZE GRID */}
-      <section className="border-b-4 border-[#000000] py-12 md:py-24 px-8">
+      {/* BUYER SELECTION */}
+      <section className="border-b border-gray-300 py-32 md:py-40 px-8 md:px-12 relative">
         <div className="max-w-7xl mx-auto">
-          <h2 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter mb-12" style={{ letterSpacing: '-0.02em' }}>
-            CHOOSE YOUR BUYER
+          <h2 className="font-serif text-4xl md:text-5xl font-bold uppercase tracking-tight mb-20" style={{ letterSpacing: '-0.01em' }}>
+            Choose Your Buyer
           </h2>
 
-          {/* Equal-size 3-column grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-20">
             {PERSONAS.map((persona, idx) => (
               <div
                 key={persona.id}
                 onClick={() => setSelectedBuyer(persona.id)}
-                onMouseEnter={() => setHoveredPersona(persona.id)}
-                onMouseLeave={() => setHoveredPersona(null)}
-                className="border-4 border-[#000000] p-8 cursor-pointer transition-all duration-150"
+                className={`border border-gray-300 p-10 cursor-pointer animate-fade-in-up persona-card ${idx === 0 ? 'stagger-1' : idx === 1 ? 'stagger-2' : 'stagger-3'}`}
                 style={{
-                  backgroundColor: selectedBuyer === persona.id ? '#000000' : '#FAFAFA',
-                  color: selectedBuyer === persona.id ? '#FAFAFA' : '#000000',
-                  boxShadow: selectedBuyer === persona.id || hoveredPersona === persona.id ? '8px 8px 0px 0px rgba(0,0,0,1)' : 'none',
-                  transform: hoveredPersona === persona.id && selectedBuyer !== persona.id ? 'translate(-4px, -4px)' : 'translate(0, 0)',
+                  backgroundColor: selectedBuyer === persona.id ? '#000000' : '#FFFFFF',
+                  color: selectedBuyer === persona.id ? '#FFFFFF' : '#000000',
                 }}
               >
-                <div className="flex flex-col items-center text-center mb-4">
-                  <div className="text-5xl mb-4" style={{ color: selectedBuyer === persona.id ? '#FAFAFA' : '#000000' }}>
-                    {persona.icon}
-                  </div>
-                  <h3 className="font-serif text-2xl font-black uppercase tracking-tight mb-2" style={{ letterSpacing: '-0.01em' }}>
-                    {persona.name}
-                  </h3>
-                  <p className="font-mono text-xs uppercase font-bold tracking-wider" style={{ color: selectedBuyer === persona.id ? '#FAFAFA' : '#000000' }}>
-                    {persona.title}
-                  </p>
-                </div>
-                <p className="text-sm leading-tight text-center mb-4">
+                <h3 className="font-serif text-2xl font-bold uppercase tracking-tight mb-2" style={{ letterSpacing: '-0.01em' }}>
+                  {persona.name}
+                </h3>
+                <p className="text-sm font-semibold text-gray-600 mb-4" style={{ color: selectedBuyer === persona.id ? '#BDBDBD' : '#757575' }}>
+                  {persona.title}
+                </p>
+                <p className="text-base leading-relaxed mb-6" style={{ color: selectedBuyer === persona.id ? '#E0E0E0' : '#424242' }}>
                   {persona.description}
                 </p>
                 {selectedBuyer === persona.id && (
-                  <div className="text-center border-t-2 border-current pt-3">
-                    <div className="font-mono text-xs uppercase font-bold tracking-widest">✓ SELECTED</div>
-                  </div>
+                  <div className="text-sm font-semibold">✓ SELECTED</div>
                 )}
               </div>
             ))}
           </div>
 
-          {/* START PITCH Button - Below Grid */}
-          <div className="flex justify-center">
+          <div className="flex justify-center mt-8">
             <button
               onClick={handleStartSimulation}
               disabled={!selectedBuyer}
-              className="border-4 border-[#000000] font-serif font-black text-2xl uppercase px-12 py-8 transition-all duration-150 flex items-center gap-4"
+              className="px-16 py-6 border-2 border-gray-400 font-serif font-bold text-xl uppercase flex items-center gap-3 button-hover"
               style={{
-                backgroundColor: selectedBuyer ? '#FF2A85' : '#CCCCCC',
-                color: selectedBuyer ? '#FAFAFA' : '#999999',
-                boxShadow: selectedBuyer ? '8px 8px 0px 0px rgba(0,0,0,1)' : 'none',
+                backgroundColor: selectedBuyer ? '#000000' : '#F5F5F5',
+                color: selectedBuyer ? '#FFFFFF' : '#BDBDBD',
                 cursor: selectedBuyer ? 'pointer' : 'not-allowed',
               }}
-              onMouseDown={(e) => {
-                if (selectedBuyer) {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(8px, 8px)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                }
-              }}
-              onMouseUp={(e) => {
-                if (selectedBuyer) {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '8px 8px 0px 0px rgba(0,0,0,1)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedBuyer) {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '8px 8px 0px 0px rgba(0,0,0,1)';
-                }
-              }}
             >
-              START PITCH
+              BEGIN TRAINING
               <ArrowRight className="w-6 h-6" />
             </button>
           </div>
         </div>
       </section>
 
-      {/* WHY CLOSERR WINS - 3 COLORED BOXES */}
-      <section className="border-b-4 border-[#000000] py-12 md:py-24 px-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter mb-12" style={{ letterSpacing: '-0.02em' }}>
-            WHY CLOSERR WINS
-          </h2>
+      {/* WHY CLOSERR WORKS */}
+      <section
+        className="border-b border-gray-300 py-32 md:py-40 px-8 md:px-12 relative"
+        style={{
+          backgroundImage: 'url(/ripple.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="bg-white border border-gray-300 p-12 md:p-20 animate-fade-in-up">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4 text-center" style={{ letterSpacing: '-0.01em' }}>
+              Why Closerr Works
+            </h2>
+            <p className="text-base md:text-lg text-gray-600 mb-16 text-center max-w-full mx-auto">Practice against realistic AI buyers. Get real-time feedback. Crush your closes.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Feature 1 - Hot Pink */}
-            <div className="border-4 border-[#000000] p-8" style={{ backgroundColor: '#FF2A85', color: '#FAFAFA', boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
-              <h3 className="font-serif text-2xl font-black uppercase mb-4" style={{ letterSpacing: '-0.01em' }}>
-                REAL-TIME METRICS
-              </h3>
-              <p className="text-sm leading-tight">
-                Track talk ratio, pacing, empathy, and objection handling. Every second counts.
-              </p>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              <div className="animate-fade-in-up stagger-1 benefit-card py-2">
+                <h3 className="font-serif text-lg font-bold text-black mb-3">Real-Time Feedback</h3>
+                <p className="text-sm leading-relaxed text-gray-700">
+                  Track talk ratio, pacing, empathy, and objection handling. Every word counts.
+                </p>
+              </div>
 
-            {/* Feature 2 - Electric Cyan */}
-            <div className="border-4 border-[#000000] p-8" style={{ backgroundColor: '#00E5FF', color: '#000000', boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
-              <h3 className="font-serif text-2xl font-black uppercase mb-4" style={{ letterSpacing: '-0.01em' }}>
-                AI COACHING
-              </h3>
-              <p className="text-sm leading-tight">
-                Get personalized feedback powered by the same AI that beats top closers.
-              </p>
-            </div>
+              <div className="animate-fade-in-up stagger-2 benefit-card py-2">
+                <h3 className="font-serif text-lg font-bold text-black mb-3">AI Coaching</h3>
+                <p className="text-sm leading-relaxed text-gray-700">
+                  Get personalized feedback powered by the same AI that beats top closers.
+                </p>
+              </div>
 
-            {/* Feature 3 - Bold Orange */}
-            <div className="border-4 border-[#000000] p-8" style={{ backgroundColor: '#FF5E00', color: '#FAFAFA', boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
-              <h3 className="font-serif text-2xl font-black uppercase mb-4" style={{ letterSpacing: '-0.01em' }}>
-                REALISTIC BUYERS
-              </h3>
-              <p className="text-sm leading-tight">
-                Three distinct personas that respond naturally to your actual sales approach.
-              </p>
+              <div className="animate-fade-in-up stagger-3 benefit-card py-2">
+                <h3 className="font-serif text-lg font-bold text-black mb-3">Realistic Buyers</h3>
+                <p className="text-sm leading-relaxed text-gray-700">
+                  Three distinct personas that respond naturally to your actual sales approach.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t-4 border-[#000000] py-8 px-8">
-        <div className="max-w-7xl mx-auto text-center font-mono text-xs uppercase font-bold tracking-widest">
+      <footer className="border-t border-gray-300 py-16 px-8 md:px-12">
+        <div className="max-w-7xl mx-auto text-center text-sm text-gray-600 font-semibold tracking-wide">
           CLOSERR © 2024 | AI SALES TRAINING
         </div>
       </footer>

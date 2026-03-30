@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Space_Mono } from 'next/font/google';
+import { Playfair_Display, Inter } from 'next/font/google';
 import "./globals.css";
 
-// This sets up our "Space-Age" fonts
-const sans = Space_Grotesk({ 
+// Serif font for headlines
+const serif = Playfair_Display({
   subsets: ['latin'],
-  variable: '--font-sans',
+  variable: '--font-serif',
+  weight: ['400', '500', '600', '700'],
 });
 
-const mono = Space_Mono({ 
-  weight: ['400', '700'],
+// Sans-serif for body text
+const sans = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  weight: ['400', '500', '600', '700'],
+});
+
+const mono = Inter({
   subsets: ['latin'],
   variable: '--font-mono',
+  weight: ['400', '700'],
 });
 
 export const metadata: Metadata = {
@@ -25,8 +33,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-slate-950 text-white font-sans">
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-white text-black font-sans">
         {children}
       </body>
     </html>

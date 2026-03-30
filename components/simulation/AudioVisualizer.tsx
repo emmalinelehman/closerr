@@ -55,7 +55,7 @@ export default function AudioVisualizer({
         analyser.getByteFrequencyData(dataArray);
 
         // Clear canvas
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.1)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.fillRect(0, 0, width, height);
 
         // Draw waveform bars
@@ -66,9 +66,9 @@ export default function AudioVisualizer({
         for (let i = 0; i < bufferLength; i++) {
           const barHeight = (dataArray[i] / 255) * height;
 
-          // Gradient from orange to purple
-          const hue = (i / bufferLength) * 60 + 30; // Orange to red range
-          ctx.fillStyle = `hsl(${hue}, 100%, ${50 + (barHeight / height) * 20}%)`;
+          // Grayscale bars
+          const brightness = 30 + (i / bufferLength) * 50; // Dark gray to medium gray
+          ctx.fillStyle = `hsl(0, 0%, ${brightness}%)`;
 
           ctx.fillRect(x, height - barHeight, barWidth - barGap, barHeight);
           x += barWidth;
