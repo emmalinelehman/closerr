@@ -148,7 +148,7 @@ export default function Home() {
           padding: `${navPadding}px 2rem`,
         }}
       >
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div
             className="font-serif font-bold transition-all duration-300"
             style={{
@@ -159,6 +159,12 @@ export default function Home() {
           >
             CLOSERR
           </div>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="font-mono text-xs font-bold uppercase tracking-wider text-gray-600 hover:text-black transition-colors"
+          >
+            Dashboard
+          </button>
         </div>
       </nav>
 

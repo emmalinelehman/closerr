@@ -54,9 +54,9 @@ export default function ResultsPage() {
         : 'text-neutral-400';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-gray-100/10 to-gray-50/10 text-black flex flex-col">
+    <div className="min-h-screen bg-white text-black flex flex-col">
       {/* Header - Fixed */}
-      <div className="border-b-2 border-b-amber-500/30 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gradient-to-r from-gray-100/40 via-gray-200/20 to-rose-950/40 backdrop-blur-md sticky top-0 z-10">
+      <div className="border-b border-gray-300 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-white sticky top-0 z-10">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold">Call Complete</h1>
@@ -84,9 +84,9 @@ export default function ResultsPage() {
 
         {/* Overall Score */}
         {latestMetrics && (
-          <div className="bg-gradient-to-r from-gray-200/50 via-gray-300/50 to-gray-200/50 border-2 border-gray-400/50 rounded-lg p-3 sm:p-4">
-            <p className="text-xs text-gray-700 uppercase font-mono mb-1">Total Score</p>
-            <p className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-600 to-gray-700">
+          <div className="bg-white border border-gray-300 rounded-lg p-4 sm:p-5">
+            <p className="text-xs text-gray-600 uppercase font-mono mb-2">Total Score</p>
+            <p className="text-4xl sm:text-5xl font-bold text-black">
               {latestMetrics.totalScore} / 100
             </p>
           </div>
@@ -97,10 +97,10 @@ export default function ResultsPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
           {/* Transcript */}
-          <div className="bg-gradient-to-br from-gray-100/40 to-cyan-900/20 border-2 border-gray-400/30 rounded-lg p-4 sm:p-6 backdrop-blur-sm">
+          <div className="bg-white border border-gray-300 rounded-lg p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-4 sm:mb-6">
-              <div className="h-1 w-1 rounded-full bg-cyan-400"></div>
-              <h2 className="text-lg sm:text-xl font-bold text-cyan-300">Conversation Transcript</h2>
+              <div className="h-1 w-1 rounded-full bg-gray-400"></div>
+              <h2 className="text-lg sm:text-xl font-bold text-black">Conversation Transcript</h2>
             </div>
             <div className="space-y-2 sm:space-y-3 max-h-64 overflow-y-auto pr-2">
               {messages.length === 0 ? (
@@ -129,13 +129,13 @@ export default function ResultsPage() {
           {latestMetrics && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               {/* Conversational Metrics (25 pts) */}
-              <div className="bg-gradient-to-br from-orange-500/10 to-neutral-800/40 border-2 border-orange-500/30 rounded-lg p-4 sm:p-6 backdrop-blur-sm">
+              <div className="bg-white border border-gray-300 rounded-lg p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-4">
                   <div className="min-w-0">
-                    <h3 className="text-base sm:text-lg font-bold text-orange-300">Conversational Metrics</h3>
-                    <p className="text-xs text-neutral-400">Speaking style & pacing</p>
+                    <h3 className="text-base sm:text-lg font-bold text-black">Conversational Metrics</h3>
+                    <p className="text-xs text-gray-600">Speaking style & pacing</p>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-orange-400 whitespace-nowrap">{latestMetrics.conversationalScore}/25</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-black whitespace-nowrap">{latestMetrics.conversationalScore}/25</div>
                 </div>
                 <div className="space-y-2 text-xs sm:text-sm">
                   <div className="flex justify-between gap-2">
@@ -160,13 +160,13 @@ export default function ResultsPage() {
               </div>
 
               {/* Discovery Depth (25 pts) */}
-              <div className="bg-gradient-to-br from-cyan-500/10 to-neutral-800/40 border-2 border-gray-400/30 rounded-lg p-4 sm:p-6 backdrop-blur-sm">
+              <div className="bg-white border border-gray-300 rounded-lg p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-4">
                   <div className="min-w-0">
-                    <h3 className="text-base sm:text-lg font-bold text-cyan-300">Discovery Depth</h3>
-                    <p className="text-xs text-neutral-400">Question quality & sophistication</p>
+                    <h3 className="text-base sm:text-lg font-bold text-black">Discovery Depth</h3>
+                    <p className="text-xs text-gray-600">Question quality & sophistication</p>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-700 whitespace-nowrap">{latestMetrics.discoveryScore}/25</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-black whitespace-nowrap">{latestMetrics.discoveryScore}/25</div>
                 </div>
                 <div className="space-y-2 text-xs sm:text-sm">
                   <div className="flex justify-between gap-2">
@@ -185,7 +185,7 @@ export default function ResultsPage() {
               </div>
 
               {/* Tactical Empathy (20 pts) */}
-              <div className="bg-gradient-to-br from-gray-100/20 to-gray-200/20 border-2 border-gray-400/30 rounded-lg p-4 sm:p-6 backdrop-blur-sm">
+              <div className="bg-white border border-gray-300 rounded-lg p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-4">
                   <div className="min-w-0">
                     <h3 className="text-base sm:text-lg font-bold text-gray-700">Tactical Empathy</h3>

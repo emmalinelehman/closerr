@@ -68,129 +68,206 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      {/* Header */}
-      <div className="border-b border-gray-300 bg-white sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-8 md:px-12 py-8 md:py-10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold">Dashboard</h1>
-              <p className="text-lg text-gray-600 mt-2">Track your sales training progress</p>
-            </div>
-            <Button
-              onClick={handleNewCall}
-              className="bg-black hover:bg-gray-800 text-white px-6 py-3 font-semibold flex items-center gap-2"
-            >
-              <ArrowRight className="w-4 h-4" />
-              New Training
-            </Button>
+    <div className="min-h-screen bg-[#FAFAFA] text-[#000000]">
+      <style>{`
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-100%); }
+        }
+        .marquee-scroll {
+          animation: scroll 15s linear infinite;
+        }
+      `}</style>
+
+      {/* MARQUEE TICKER */}
+      <div className="border-b-4 border-t-4 border-[#000000] bg-[#FF2A85] py-3 overflow-hidden">
+        <div className="flex marquee-scroll whitespace-nowrap">
+          <div className="text-white font-mono font-bold tracking-widest text-lg px-8">
+            • CRUSH YOUR GOALS • TRAIN HARDER • CLOSE MORE DEALS • TRACK EVERY CALL • CRUSH YOUR GOALS • TRAIN HARDER • CLOSE MORE DEALS • TRACK EVERY CALL •
           </div>
+        </div>
+      </div>
+
+      {/* PAGE TITLE */}
+      <div className="border-b-4 border-[#000000] py-8 px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <h1 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
+              DASHBOARD
+            </h1>
+            <button
+              onClick={handleNewCall}
+              className="border-4 border-[#000000] bg-[#FF2A85] text-white font-serif font-black text-lg uppercase px-8 py-4 flex items-center gap-3 transition-all"
+              style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,1)' }}
+              onMouseDown={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translate(6px, 6px)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+              }}
+              onMouseUp={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,1)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,1)';
+              }}
+            >
+              NEW CALL
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Header */}
+      <div className="border-b-4 border-[#000000] bg-[#FAFAFA]">
+        <div className="max-w-7xl mx-auto px-8 py-8">
+          <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-6">Quick Stats</p>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="border border-gray-300 rounded-lg p-4">
-              <p className="text-xs text-gray-600 uppercase font-semibold mb-1">Total Calls</p>
-              <p className="text-3xl font-bold text-black">{stats.totalCalls}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+              <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-3">Total Calls</p>
+              <p className="text-4xl font-black">{stats.totalCalls}</p>
             </div>
-            <div className="border border-gray-300 rounded-lg p-4">
-              <p className="text-xs text-gray-600 uppercase font-semibold mb-1">Avg Score</p>
-              <p className="text-3xl font-bold text-black">{stats.avgScore}</p>
+            <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FF2A85', color: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+              <p className="font-mono text-xs uppercase font-bold tracking-widest mb-3 opacity-90">Avg Score</p>
+              <p className="text-4xl font-black">{stats.avgScore}</p>
             </div>
-            <div className="border border-gray-300 rounded-lg p-4">
-              <p className="text-xs text-gray-600 uppercase font-semibold mb-1">Best Score</p>
-              <p className="text-3xl font-bold text-black">{stats.bestScore}</p>
+            <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#00E5FF', color: '#000000', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+              <p className="font-mono text-xs uppercase font-bold tracking-widest mb-3">Best Score</p>
+              <p className="text-4xl font-black">{stats.bestScore}</p>
             </div>
-            <div className="border border-gray-300 rounded-lg p-4">
-              <p className="text-xs text-gray-600 uppercase font-semibold mb-1">Total Time</p>
-              <p className="text-2xl font-bold text-black">{Math.floor(stats.totalTime / 60)}m</p>
+            <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FF5E00', color: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+              <p className="font-mono text-xs uppercase font-bold tracking-widest mb-3 opacity-90">Total Time</p>
+              <p className="text-4xl font-black">{Math.floor(stats.totalTime / 60)}m</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-8 md:px-12 py-8 md:py-10">
-        {/* Sort Controls */}
-        {calls.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-gray-600 font-semibold">Sort by:</span>
-            <button
-              onClick={() => setSortBy('date')}
-              className={`px-4 py-2 text-sm font-semibold transition-all ${
-                sortBy === 'date'
-                  ? 'bg-black text-white'
-                  : 'bg-gray-100 text-black hover:bg-gray-200'
-              }`}
-            >
-              Recent
-            </button>
-            <button
-              onClick={() => setSortBy('score')}
-              className={`px-4 py-2 text-sm font-semibold transition-all ${
-                sortBy === 'score'
-                  ? 'bg-black text-white'
-                  : 'bg-gray-100 text-black hover:bg-gray-200'
-              }`}
-            >
-              Top Scores
-            </button>
-          </div>
-        )}
+      <div className="max-w-7xl mx-auto px-8 py-12">
+        <div className="flex items-center justify-between gap-6 mb-8">
+          <h2 className="font-serif text-3xl md:text-4xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
+            ALL CALLS
+          </h2>
+
+          {/* Sort Controls */}
+          {calls.length > 0 && (
+            <div className="flex gap-3 border-4 border-[#000000] bg-white">
+              <button
+                onClick={() => setSortBy('date')}
+                className={`px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider border-r-4 border-[#000000] ${
+                  sortBy === 'date'
+                    ? 'bg-[#000000] text-white'
+                    : 'bg-white text-[#000000] hover:bg-gray-100'
+                }`}
+              >
+                Latest
+              </button>
+              <button
+                onClick={() => setSortBy('score')}
+                className={`px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider ${
+                  sortBy === 'score'
+                    ? 'bg-[#000000] text-white'
+                    : 'bg-white text-[#000000] hover:bg-gray-100'
+                }`}
+              >
+                Best
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Calls List */}
         {calls.length === 0 ? (
-          <div className="text-center py-16 border-2 border-dashed border-gray-300 rounded-lg">
-            <h3 className="text-xl font-semibold text-black mb-2">No calls yet</h3>
-            <p className="text-gray-600 mb-6">Start your first training session to see your results here.</p>
-            <Button onClick={handleNewCall} className="bg-black hover:bg-gray-800 text-white">
-              Start Training
-            </Button>
+          <div className="border-4 border-[#000000] p-16 text-center" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.1)' }}>
+            <p className="font-serif text-2xl font-black uppercase mb-3" style={{ letterSpacing: '-0.01em' }}>
+              No Calls Yet
+            </p>
+            <p className="font-mono text-sm text-gray-600 mb-6">Start a simulation to build your history</p>
+            <button
+              onClick={handleNewCall}
+              className="border-4 border-[#000000] bg-[#FF2A85] text-white font-serif font-black text-lg uppercase px-8 py-4 inline-flex items-center gap-3"
+              style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,1)' }}
+              onMouseDown={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translate(6px, 6px)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+              }}
+              onMouseUp={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,1)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,1)';
+              }}
+            >
+              START NEW CALL
+              <ArrowRight className="w-5 h-5" />
+            </button>
           </div>
         ) : (
-          <div className="space-y-3 md:space-y-4">
+          <div className="space-y-4">
             {sortedCalls.map((call) => (
               <div
                 key={call.id}
                 onClick={() => handleViewCall(call.id)}
-                className="bg-gray-50 border border-gray-300 rounded-lg p-4 md:p-6 cursor-pointer hover:bg-gray-100 transition-all group"
+                className="border-4 border-[#000000] p-6 cursor-pointer transition-all duration-150"
+                style={{
+                  backgroundColor: '#FAFAFA',
+                  boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.3)',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = 'translate(-4px, -4px)';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '8px 8px 0px 0px rgba(0,0,0,0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = 'translate(0, 0)';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '4px 4px 0px 0px rgba(0,0,0,0.3)';
+                }}
               >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  {/* Left: Persona Info */}
+                <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-black text-lg">{call.personaName}</h3>
-                      <span className="text-xs text-gray-600 bg-gray-200 px-2 py-1 rounded">
-                        {call.personaTitle}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-gray-600">{formatDate(call.date)}</p>
+                    <p className="font-mono text-xs uppercase font-bold tracking-wider text-gray-600 mb-1">
+                      {call.personaName}
+                    </p>
+                    <p className="text-sm text-gray-700 font-medium mb-2">{call.personaTitle}</p>
+                    <p className="text-xs text-gray-600">{formatDate(call.date)}</p>
                   </div>
 
-                  {/* Right: Score & Duration */}
-                  <div className="flex items-center gap-4">
-                    <div className="border border-gray-300 rounded-lg p-3 bg-white">
-                      <div className="text-xs text-gray-600 uppercase font-semibold mb-1">Score</div>
-                      <div className="text-2xl sm:text-3xl font-bold text-black">
-                        {call.score}
-                      </div>
+                  <div className="flex items-center gap-4 flex-shrink-0">
+                    <div className="text-right">
+                      <p className="text-4xl font-black">{call.score}</p>
+                      <p className="font-mono text-xs uppercase font-bold text-gray-600">/100</p>
                     </div>
-                    <div className="text-right hidden sm:block">
-                      <div className="text-xs text-gray-600 uppercase font-semibold mb-1">Duration</div>
-                      <div className="text-sm text-black font-semibold">{formatDuration(call.duration)}</div>
-                    </div>
+
                     <button
                       onClick={(e) => handleDelete(call.id, e)}
-                      className="p-2 hover:bg-gray-200 rounded transition-all text-gray-600 hover:text-black opacity-0 group-hover:opacity-100"
+                      className="p-2 hover:bg-red-100 rounded-lg transition-colors"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-5 h-5 text-red-500" />
                     </button>
                   </div>
+                </div>
+
+                <div className="border-t-2 border-gray-300 pt-4">
+                  <p className="font-mono text-xs uppercase font-bold text-gray-600 mb-1">Duration</p>
+                  <p className="font-medium">{formatDuration(call.duration)}</p>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* FOOTER */}
+      <footer className="border-t-4 border-[#000000] py-8 px-8 mt-12">
+        <div className="max-w-7xl mx-auto text-center font-mono text-xs uppercase font-bold tracking-widest">
+          CLOSERR © 2024 | TRACK YOUR PROGRESS
+        </div>
+      </footer>
     </div>
   );
 }

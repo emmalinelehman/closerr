@@ -111,14 +111,14 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      {/* NAVIGATION */}
-      <nav className="border-b-4 border-[#000000] py-6 px-8">
+      {/* PAGE TITLE */}
+      <div className="border-b-4 border-[#000000] py-8 px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-2xl md:text-3xl font-bold tracking-tighter uppercase font-serif" style={{ letterSpacing: '-0.02em' }}>
+          <h1 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
             CALL HISTORY
-          </div>
+          </h1>
         </div>
-      </nav>
+      </div>
 
       {/* STATS SECTION */}
       {stats.totalCalls > 0 && (
