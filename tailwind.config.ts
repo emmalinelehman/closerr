@@ -54,6 +54,17 @@ const config = {
           900: '#111827',
           950: '#0f0f0f',
         },
+        // Dark theme colors
+        dark: {
+          bg: '#1a1a1a',
+          'bg-secondary': '#262626',
+          'bg-tertiary': '#333333',
+          text: '#f5f5f5',
+          'text-secondary': '#d0d0d0',
+          'text-tertiary': '#a0a0a0',
+          border: '#333333',
+          'border-light': '#4a4a4a',
+        },
       },
       animation: {
         pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -65,6 +76,7 @@ const config = {
         'fade-in': 'fade-in 200ms ease-out',
         'slide-up': 'slide-up 200ms ease-out',
         'bounce-light': 'bounce-light 0.6s ease-in-out',
+        'spin-slow': 'spin-slow 8s linear infinite',
       },
       keyframes: {
         'pulse-gentle': {
@@ -102,6 +114,10 @@ const config = {
         'bounce-light': {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-2px)' },
+        },
+        'spin-slow': {
+          'from': { transform: 'rotate(0deg)' },
+          'to': { transform: 'rotate(360deg)' },
         },
       },
       backdropFilter: {
