@@ -93,18 +93,34 @@ export default function SimulationPage() {
       return;
     }
 
+    const benefits = customProduct.keyBenefits.split('\n').filter(b => b.trim());
+    if (benefits.length === 0) {
+      alert('Please add at least one key benefit');
+      return;
+    }
+
     const newProduct: Product = {
       id: `custom-${Date.now()}`,
       name: customProduct.name,
       category: customProduct.category,
-      description: '',
-      targetRole: 'Sales',
-      keyBenefits: customProduct.keyBenefits.split('\n').filter(b => b.trim()),
+      description: `${customProduct.name} - A ${customProduct.category} solution for modern teams.`,
+      targetRole: 'Operations',
+      keyBenefits: benefits,
       pricingModel: 'Custom',
       pricingCost: customProduct.pricingCost,
-      implementationTime: customProduct.implementationTime,
-      naturalConcerns: [],
-      successMetrics: [],
+      implementationTime: customProduct.implementationTime || '2-3 weeks',
+      naturalConcerns: [
+        'Will this integrate with our existing tools?',
+        'What is the total cost of ownership?',
+        'How long will implementation take?',
+        'Do you have references from companies like ours?',
+      ],
+      successMetrics: [
+        'Time savings',
+        'Cost reduction',
+        'Improved efficiency',
+        'Team adoption rate',
+      ],
     };
 
     setSelectedProduct(newProduct);
@@ -124,18 +140,10 @@ export default function SimulationPage() {
 
       {/* Main Content - Two Column Layout */}
       <div className="max-w-7xl mx-auto px-8 py-8">
-        {/* Section Header */}
-        <div className="mb-8">
-          <h2 className="font-serif text-3xl font-black uppercase tracking-tighter mb-1" style={{ letterSpacing: '-0.02em' }}>
-            SELECT PRODUCT
-          </h2>
-          <p className="font-mono text-xs uppercase tracking-wider text-gray-600">What are you selling?</p>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col md:flex-row gap-8 md:items-stretch">
           {/* Left Column: Persona Context (Sticky) */}
-          <div className="md:w-2/5">
-            <div className="md:sticky md:top-8 border-4 border-black p-6 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+          <div className="md:w-2/5 flex flex-col">
+            <div className="md:sticky md:top-8 border-4 border-black p-6 bg-white h-full" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
               {/* Persona Profile */}
               <div>
                 <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-3">Persona Profile</p>
@@ -177,6 +185,13 @@ export default function SimulationPage() {
 
           {/* Right Column: Product Selection */}
           <div className="md:w-3/5 space-y-6">
+            {/* Header */}
+            <div>
+              <h2 className="font-serif text-3xl font-black uppercase tracking-tighter mb-1" style={{ letterSpacing: '-0.02em' }}>
+                SELECT PRODUCT
+              </h2>
+              <p className="font-mono text-xs uppercase tracking-wider text-gray-600">What are you selling?</p>
+            </div>
 
             {/* Product Grid */}
             <div className="grid grid-cols-1 gap-4">
