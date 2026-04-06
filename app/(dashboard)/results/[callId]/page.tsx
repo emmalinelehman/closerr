@@ -77,11 +77,11 @@ export default function ResultsPage() {
       backgroundAttachment: 'fixed',
     }}>
       {/* Header */}
-      <div className="border-b-4 border-black px-8 py-6 bg-white">
+      <div className="border-b-4 border-black px-4 sm:px-6 md:px-8 py-4 sm:py-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
             <div className="flex-1 min-w-0">
-              <h1 className="font-serif text-3xl md:text-4xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
+              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
                 CALL COMPLETE
               </h1>
               <p className="font-mono text-xs uppercase tracking-wider text-gray-600 mt-2">
@@ -122,13 +122,13 @@ export default function ResultsPage() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="w-full px-8 py-12">
-          <div className="max-w-7xl mx-auto space-y-8">
+        <div className="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12">
+          <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
             {/* Score Card */}
             {latestMetrics && (
-              <div className="border-4 border-black p-8 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+              <div className="border-4 border-black p-6 sm:p-8 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
                 <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-4">Total Score</p>
-                <p className="text-6xl md:text-7xl font-black" style={{ lineHeight: '1' }}>
+                <p className="text-5xl sm:text-6xl md:text-7xl font-black" style={{ lineHeight: '1' }}>
                   {latestMetrics.totalScore}
                 </p>
                 <p className="font-mono text-sm uppercase font-bold tracking-wide mt-3 text-gray-600">/100</p>
@@ -186,10 +186,10 @@ export default function ResultsPage() {
             {/* Metrics Grid */}
             {latestMetrics && (
               <div>
-                <h2 className="font-serif text-2xl font-black uppercase tracking-tighter mb-6" style={{ letterSpacing: '-0.02em' }}>
+                <h2 className="font-serif text-xl sm:text-2xl font-black uppercase tracking-tighter mb-4 sm:mb-6" style={{ letterSpacing: '-0.02em' }}>
                   Performance Metrics
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
                   {/* Conversational */}
                   <div className="border-4 border-black p-6 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
                     <div className="flex justify-between items-start mb-4">
@@ -407,7 +407,7 @@ export default function ResultsPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t-4 border-black py-8 px-8 bg-white">
+      <footer className="border-t-4 border-black py-6 sm:py-8 px-4 sm:px-6 md:px-8 bg-white">
         <div className="max-w-7xl mx-auto text-center font-mono text-xs uppercase font-bold tracking-widest text-gray-600">
           CLOSERR © 2024 | TRACK YOUR PROGRESS
         </div>

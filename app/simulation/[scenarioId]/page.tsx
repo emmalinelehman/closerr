@@ -191,18 +191,18 @@ export default function SimulationPage() {
 
       {/* Header */}
       <div className="border-b-4 border-black">
-        <div className="max-w-7xl mx-auto px-8 py-6">
-          <h1 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6">
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
             PREPARE FOR CALL
           </h1>
         </div>
       </div>
 
       {/* Persona Context Section */}
-      <div className="border-b border-gray-300">
-        <div className="max-w-7xl mx-auto px-8 py-6">
+      <div className="border-b border-gray-300 overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6">
           <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-4">Context</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
             <div className="border-2 border-black p-3 bg-white" style={{ boxShadow: '2px 2px 0px 0px rgba(0,0,0,0.1)' }}>
               <p className="font-mono text-xs uppercase font-bold text-gray-600 mb-1">Company</p>
               <p className="text-xs leading-tight">{persona.productBrief.company}</p>
@@ -224,10 +224,10 @@ export default function SimulationPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12">
         {/* Section Header */}
-        <div className="mb-8">
-          <h2 className="font-serif text-3xl md:text-4xl font-black uppercase tracking-tighter mb-2" style={{ letterSpacing: '-0.02em' }}>
+        <div className="mb-6 sm:mb-8">
+          <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter mb-2" style={{ letterSpacing: '-0.02em' }}>
             SELECT PRODUCT
           </h2>
           <p className="font-mono text-xs uppercase tracking-widest text-gray-600">What are you selling to {persona.name}?</p>
@@ -239,7 +239,7 @@ export default function SimulationPage() {
             <button
               key={product.id}
               onClick={() => setSelectedProduct(product)}
-              className={`product-card w-full p-6 border-4 text-left transition-all animate-fade-in-up ${
+              className={`product-card w-full p-4 sm:p-6 border-4 text-left transition-all animate-fade-in-up ${
                 selectedProduct?.id === product.id
                   ? 'border-black bg-black text-white'
                   : 'border-black bg-white text-black'
