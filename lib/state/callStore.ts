@@ -389,7 +389,20 @@ export const useCallStore = create<CallState>((set, get) => ({
     set((s) => ({
       metrics: {
         ...s.metrics,
-        ...metrics, // Merge API metrics into main metrics object
+        // Only merge the API-calculated SCORES, not the accumulated COUNTS
+        // Counts are accumulated by addMessage via linguistic detection
+        // Scores come from the API's analysis
+        conversationalScore: metrics.conversationalScore,
+        discoveryScore: metrics.discoveryScore,
+        empathyScore: metrics.empathyScore,
+        personaAlignmentScore: metrics.personaAlignmentScore,
+        objectionScore: metrics.objectionScore,
+        closingScore: metrics.closingScore,
+        sentiment: metrics.sentiment,
+        // These are set by addMessage but may be overridden by API for accuracy
+        nextStepConfirmed: metrics.nextStepConfirmed,
+        calendarInviteAccepted: metrics.calendarInviteAccepted,
+        mutualActionPlan: metrics.mutualActionPlan,
       },
       callMetrics: [...s.callMetrics, metrics], // Keep history for debugging
     }));
