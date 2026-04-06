@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix ASCII Overlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Background Image */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* ASCII Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        pre {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.2;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #00ff00;
+            opacity: 0.3;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+            letter-spacing: 0.1em;
+            overflow: hidden;
+        }
+
+        /* Interactive Content (clickable through overlay) */
+        .content {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        .content h1 {
+            font-size: 4em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+        }
+
+        .content p {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        }
+
+        button:hover {
+            background: rgba(0, 255, 0, 0.4);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Image -->
+    <div class="background"></div>
+
+    <!-- Matrix ASCII Overlay -->
+    <div class="overlay">
+        <pre id="asciiOverlay"></pre>
+    </div>
+
+    <!-- Interactive Content (clicks pass through overlay) -->
+    <div class="content">
+        <h1>MATRIX</h1>
+        <p>Experience the digital realm with an ASCII art overlay</p>
+        <button onclick="alert('Button clicked! Clicks pass through the overlay.')">Click Me</button>
+    </div>
+
+    <script>
+        const asciiOverlay = document.getElementById('asciiOverlay');
+        const chars = '▓░▒█▀▄╱╲╳╭╮╰╯┌┐└┘│─├┤┬┴┼·•°◆◇★✦✧✱✲✳❋❉❈❊';
+
+        // Calculate grid dimensions based on viewport
+        function getGridDimensions() {
+            const charWidth = 7;  // Approximate width in pixels for monospace 12px
+            const charHeight = 14; // Approximate height with line-height 1.2
+
+            const cols = Math.floor(window.innerWidth / charWidth);
+            const rows = Math.floor(window.innerHeight / charHeight);
+
+            return { cols, rows };
+        }
+
+        // Generate random ASCII character
+        function randomChar() {
+            return chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        // Grid with lifetime tracking for fade effect
+        class CharCell {
+            constructor() {
+                this.char = Math.random() > 0.5 ? randomChar() : ' ';
+                this.life = Math.random() * 100; // 0-100, starts random for staggered effect
+            }
+
+            decay() {
+                this.life -= Math.random() * 3 + 1; // Decay faster
+                if (this.life <= 0) {
+                    this.char = ' ';
+                    this.life = 0;
+                }
+            }
+
+            spawn() {
+                if (this.life <= 0 && Math.random() > 0.92) {
+                    this.char = randomChar();
+                    this.life = 100 + Math.random() * 50;
+                }
+            }
+        }
+
+        let { cols, rows } = getGridDimensions();
+        let grid = Array(rows)
+            .fill(null)
+            .map(() => Array(cols).fill(null).map(() => new CharCell()));
+
+        // Update grid with dispersing effect
+        function updateGrid() {
+            const { cols: newCols, rows: newRows } = getGridDimensions();
+
+            // Handle resize
+            if (newCols !== cols || newRows !== rows) {
+                cols = newCols;
+                rows = newRows;
+                grid = Array(rows)
+                    .fill(null)
+                    .map(() => Array(cols).fill(null).map(() => new CharCell()));
+            }
+
+            // Update each cell
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    grid[i][j].decay();
+                    grid[i][j].spawn();
+                }
+            }
+
+            // Occasionally create bursts of new ASCII in random areas
+            if (Math.random() > 0.85) {
+                const burstRow = Math.floor(Math.random() * rows);
+                const burstCol = Math.floor(Math.random() * cols);
+                const burstSize = Math.floor(Math.random() * 15 + 5);
+
+                for (let k = 0; k < burstSize; k++) {
+                    const r = Math.max(0, Math.min(rows - 1, burstRow + Math.floor(Math.random() * 10 - 5)));
+                    const c = Math.max(0, Math.min(cols - 1, burstCol + Math.floor(Math.random() * 10 - 5)));
+                    if (grid[r][c].life <= 0) {
+                        grid[r][c].char = randomChar();
+                        grid[r][c].life = 100;
+                    }
+                }
+            }
+
+            // Render grid with opacity based on life
+            let output = '';
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const cell = grid[i][j];
+                    if (cell.char === ' ' || cell.life <= 0) {
+                        output += ' ';
+                    } else {
+                        output += cell.char;
+                    }
+                }
+                if (i < rows - 1) output += '\n';
+            }
+            asciiOverlay.textContent = output;
+        }
+
+        // Animation loop
+        function animate() {
+            updateGrid();
+            setTimeout(animate, 80); // Update every 80ms
+        }
+
+        // Initialize and start animation
+        animate();
+    </script>
+</body>
+</html>

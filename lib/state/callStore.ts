@@ -7,64 +7,57 @@ export interface Message {
 }
 
 export interface CallMetrics {
-  // Conversational Metrics (25 pts max)
+  // Internal tracking (for real-time updates)
   totalWords: number;
   userWords: number;
   aiWords: number;
-  talkRatio: number; // 0-1, target 0.43-0.57
-  wpm: number; // target 140-170
+
+  // Conversational (25 pts)
+  talkToListen: number; // 0-100 percentage from API
+  talkRatio: number; // 0-1 for internal use
+  wpm: number;
   questionCount: number;
   conversationalScore: number;
 
-  // Discovery Depth (25 pts max)
-  level1Questions: number; // +1 each
-  level2Questions: number; // +3 each
-  level3Questions: number; // +7 each
+  // Discovery Depth (30 pts max)
+  level1Questions: number;
+  level2Questions: number;
+  level3Questions: number;
   discoveryScore: number;
 
-  // Tactical Empathy (20 pts max)
-  labelingCount: number; // "It seems like", "It sounds like", etc. (+5 each)
-  mirroringCount: number; // (+3 each)
-  calibratedQCount: number; // (+5 each)
+  // Tactical Empathy (20 pts)
+  labelingCount: number;
+  mirroringCount: number;
+  calibratedQCount: number;
   empathyScore: number;
 
-  // Penalty Phrases
-  penaltyCount: number; // "Just checking in", "Does that make sense?" (-5 each)
-  severeViolations: number; // "We're the best", "Trust me" (-10 each)
-  professionismScore: number;
+  // Penalties
+  penaltyCount: number;
+  severeViolations: number;
 
-  // Persona Alignment (10 pts max)
-  personaAlignment: number;
+  // Persona Alignment (10 pts)
+  roiMentioned: boolean;
+  speedMentioned: boolean;
+  costMentioned: boolean;
   personaAlignmentScore: number;
-  roiMentioned: boolean; // CFO specific
-  speedMentioned: boolean; // Founder specific
-  costMentioned: boolean; // SMB specific
 
-  // Objection Handling (10 pts max)
+  // Objection Handling (10 pts)
   objectionsRaised: number;
   objectionsHandled: number;
   objectionScore: number;
 
-  // Closing (10 pts max)
+  // Closing (10 pts)
   nextStepConfirmed: boolean;
   calendarInviteAccepted: boolean;
   mutualActionPlan: boolean;
   closingScore: number;
 
-  // Overall
-  totalScore: number; // 100 pts max
-  duration: number; // seconds
-}
-
-export interface APIMetrics {
-  talkToListen: number;
-  wpm: number;
+  // Sentiment
   sentiment: 'Positive' | 'Neutral' | 'Negative';
-  questionCount: number;
-  labelingUsed: boolean;
-  roiMentioned: boolean;
-  speedMentioned: boolean;
-  costMentioned: boolean;
+
+  // Overall
+  totalScore: number;
+  duration: number;
 }
 
 export interface CallState {
@@ -76,7 +69,7 @@ export interface CallState {
   startTime: number | null;
   duration: number;
   metrics: CallMetrics;
-  callMetrics: APIMetrics[];
+  callMetrics: CallMetrics[];
   sessionEnded: boolean;
   finalScorecard: CallMetrics | null;
 
@@ -85,7 +78,7 @@ export interface CallState {
   startCall: () => void;
   endCall: () => void;
   addMessage: (speaker: 'user' | 'ai', text: string) => void;
-  addMetrics: (metrics: APIMetrics) => void;
+  addMetrics: (metrics: CallMetrics) => void;
   updateMetrics: () => void;
   resetCall: () => void;
 }
@@ -94,7 +87,8 @@ const initialMetrics: CallMetrics = {
   totalWords: 0,
   userWords: 0,
   aiWords: 0,
-  talkRatio: 0,
+  talkToListen: 50,
+  talkRatio: 0.5,
   wpm: 0,
   questionCount: 0,
   conversationalScore: 0,
@@ -108,8 +102,6 @@ const initialMetrics: CallMetrics = {
   empathyScore: 0,
   penaltyCount: 0,
   severeViolations: 0,
-  professionismScore: 100,
-  personaAlignment: 0,
   personaAlignmentScore: 0,
   roiMentioned: false,
   speedMentioned: false,
@@ -121,6 +113,7 @@ const initialMetrics: CallMetrics = {
   calendarInviteAccepted: false,
   mutualActionPlan: false,
   closingScore: 0,
+  sentiment: 'Neutral',
   totalScore: 0,
   duration: 0,
 };
@@ -282,65 +275,25 @@ export const useCallStore = create<CallState>((set, get) => ({
     const state = get();
     const finalMetrics = { ...state.metrics };
 
-    // Calculate final scores based on SALES_ENGINE.md
-    let score = 0;
+    // Calculate final duration
+    if (state.startTime) {
+      finalMetrics.duration = Math.floor((Date.now() - state.startTime) / 1000);
+    }
 
-    // Conversational Metrics (25 pts)
-    let convScore = 25;
-    if (state.metrics.talkRatio > 0.65) convScore -= 10;
-    if (state.metrics.talkRatio < 0.35) convScore -= 5;
-    if (state.metrics.wpm > 180) convScore -= 5;
-    if (state.metrics.wpm < 120) convScore -= 5;
-    if (state.metrics.questionCount < 8) convScore -= 10;
-    if (state.metrics.questionCount > 25) convScore -= 5;
-    score += Math.max(0, convScore);
+    // Aggregate all metric components into totalScore
+    // API has already calculated individual scores, just add them up
+    const totalScore = Math.max(0, Math.min(100,
+      (finalMetrics.conversationalScore || 0) +
+      (finalMetrics.discoveryScore || 0) +
+      (finalMetrics.empathyScore || 0) +
+      (finalMetrics.personaAlignmentScore || 0) +
+      (finalMetrics.objectionScore || 0) +
+      (finalMetrics.closingScore || 0) -
+      ((finalMetrics.penaltyCount || 0) * 5) -
+      ((finalMetrics.severeViolations || 0) * 10)
+    ));
 
-    // Discovery Depth (25 pts)
-    const discoveryScore = Math.min(25,
-      state.metrics.level1Questions * 1 +
-      state.metrics.level2Questions * 3 +
-      state.metrics.level3Questions * 7
-    );
-    score += discoveryScore;
-
-    // Tactical Empathy (20 pts)
-    let empathyScore = 0;
-    empathyScore += state.metrics.labelingCount * 5;
-    empathyScore += state.metrics.mirroringCount * 3;
-    empathyScore += state.metrics.calibratedQCount * 5;
-    score += Math.min(20, empathyScore);
-
-    // Persona Alignment (10 pts)
-    let personaScore = 10;
-    if (state.personaId === 'skeptical-cfo' && !state.metrics.roiMentioned) personaScore -= 10;
-    if (state.personaId === 'busy-founder' && !state.metrics.speedMentioned) personaScore -= 5;
-    if (state.personaId === 'price-sensitive' && !state.metrics.costMentioned) personaScore -= 5;
-    score += Math.max(0, personaScore);
-
-    // Objection Handling (10 pts)
-    const objectionScore = state.metrics.objectionsHandled > 0 ?
-      Math.min(10, (state.metrics.objectionsHandled / state.metrics.objectionsRaised) * 10) : 0;
-    score += objectionScore;
-
-    // Closing (10 pts)
-    let closingScore = 0;
-    if (state.metrics.nextStepConfirmed) closingScore += 4;
-    if (state.metrics.calendarInviteAccepted) closingScore += 3;
-    if (state.metrics.mutualActionPlan) closingScore += 3;
-    score += closingScore;
-
-    // Penalty phrases
-    score -= state.metrics.penaltyCount * 5;
-    score -= state.metrics.severeViolations * 10;
-
-    finalMetrics.totalScore = Math.max(0, Math.round(score));
-    finalMetrics.conversationalScore = convScore;
-    finalMetrics.discoveryScore = discoveryScore;
-    finalMetrics.empathyScore = Math.min(20, empathyScore);
-    finalMetrics.personaAlignment = Math.max(0, personaScore);
-    finalMetrics.personaAlignmentScore = Math.max(0, personaScore);
-    finalMetrics.objectionScore = objectionScore;
-    finalMetrics.closingScore = closingScore;
+    finalMetrics.totalScore = totalScore;
 
     set({
       isCallActive: false,
@@ -432,9 +385,13 @@ export const useCallStore = create<CallState>((set, get) => ({
     }
   },
 
-  addMetrics: (metrics: APIMetrics) => {
+  addMetrics: (metrics: CallMetrics) => {
     set((s) => ({
-      callMetrics: [...s.callMetrics, metrics],
+      metrics: {
+        ...s.metrics,
+        ...metrics, // Merge API metrics into main metrics object
+      },
+      callMetrics: [...s.callMetrics, metrics], // Keep history for debugging
     }));
   },
 

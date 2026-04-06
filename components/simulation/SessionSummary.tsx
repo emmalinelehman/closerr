@@ -110,7 +110,7 @@ export default function SessionSummary({
               <div>
                 <p className="text-xs text-gray-600 uppercase font-semibold tracking-wide mb-2">Talk Ratio</p>
                 <p className="text-xl font-bold text-black">
-                  {Math.round(scorecard.talkRatio * 100)}%
+                  {scorecard.talkToListen}%
                 </p>
               </div>
               <div>
@@ -131,12 +131,12 @@ export default function SessionSummary({
               <h3 className="text-lg font-serif font-bold text-black">Conversational Metrics</h3>
               <ScoreCategory
                 label="Talk-to-Listen Ratio"
-                score={scorecard.talkRatio * 100}
+                score={scorecard.talkToListen}
                 maxScore={100}
                 details={
-                  scorecard.talkRatio > 0.65
+                  scorecard.talkToListen > 65
                     ? '⚠️ Monologue Warning: Exceeded 65%'
-                    : `Target: 43-57% (${Math.round(scorecard.talkRatio * 100)}%)`
+                    : `Target: 43-57% (${Math.round(scorecard.talkToListen)}%)`
                 }
               />
               <ScoreCategory
@@ -258,7 +258,7 @@ export default function SessionSummary({
           <div className="border border-gray-300 rounded-lg p-6 md:p-8 bg-gray-50">
             <h3 className="text-lg font-serif font-bold text-black mb-6">Key Takeaways</h3>
             <ul className="space-y-3 text-gray-700 text-sm">
-              {scorecard.talkRatio > 0.65 && (
+              {scorecard.talkToListen > 65 && (
                 <li className="flex gap-3">
                   <span className="text-gray-600">•</span>
                   <span>You talked too much. Aim for 43-57% talk ratio to balance speaking with listening.</span>

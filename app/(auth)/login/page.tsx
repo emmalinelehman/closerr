@@ -31,33 +31,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#000000] font-sans flex flex-col">
-      <style>{`
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
-        }
-        .marquee-scroll {
-          animation: scroll 15s linear infinite;
-        }
-      `}</style>
-
-      {/* MARQUEE TICKER */}
-      <div className="border-b-4 border-t-4 border-[#000000] bg-[#00E5FF] py-3 overflow-hidden">
-        <div className="flex marquee-scroll whitespace-nowrap">
-          <div className="text-black font-mono font-bold tracking-widest text-lg px-8">
-            • MASTER THE PITCH • CLOSE MORE DEALS • CRUSH YOUR QUOTA • NO EXCUSES • MASTER THE PITCH • CLOSE MORE DEALS • CRUSH YOUR QUOTA • NO EXCUSES •
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-white text-black font-sans flex flex-col">
 
       {/* NAVIGATION */}
-      <nav className="border-b-4 border-[#000000] py-6 px-8">
+      <nav className="border-b border-gray-300 py-3 px-8">
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => router.push('/')}
-            className="text-2xl md:text-3xl font-bold tracking-tighter uppercase font-serif hover:opacity-70 transition-opacity"
-            style={{ letterSpacing: '-0.02em' }}
+            className="text-lg font-black uppercase font-serif hover:opacity-70 transition-opacity"
+            style={{ letterSpacing: '-0.01em' }}
           >
             CLOSERR
           </button>
@@ -123,8 +105,8 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full border-4 border-[#000000] bg-[#FF2A85] text-white font-serif font-black text-lg uppercase px-8 py-4 flex items-center justify-center gap-3 transition-all disabled:opacity-50"
-                style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,1)' }}
+                className="w-full border-4 border-black bg-black text-white font-serif font-black text-lg uppercase px-8 py-4 flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,0.3)' }}
                 onMouseDown={(e) => {
                   if (!isLoading) {
                     (e.currentTarget as HTMLButtonElement).style.transform = 'translate(6px, 6px)';
@@ -155,7 +137,7 @@ export default function LoginPage() {
             {/* Signup Link */}
             <p className="text-center font-mono text-sm text-gray-600">
               No account?{' '}
-              <Link href="/signup" className="font-bold text-[#FF2A85] hover:underline">
+              <Link href="/signup" className="font-bold text-black hover:underline">
                 Sign up here
               </Link>
             </p>

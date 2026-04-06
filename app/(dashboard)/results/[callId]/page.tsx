@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCallStore } from '@/lib/state/callStore';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { useCallHistory } from '@/hooks/useCallHistory';
 
 export default function ResultsPage() {
@@ -11,12 +11,14 @@ export default function ResultsPage() {
   const store = useCallStore();
   const { saveCall } = useCallHistory();
   const savedRef = useRef(false);
+  const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
+    transcript: false,
+  });
 
   const personaName = store.personaName;
   const personaTitle = store.personaTitle;
   const messages = store.callMessages;
   const latestMetrics = store.finalScorecard;
-  const latestApiMetrics = store.callMetrics[store.callMetrics.length - 1];
 
   // Save call to history on mount
   useEffect(() => {
@@ -45,59 +47,69 @@ export default function ResultsPage() {
     router.push('/');
   };
 
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  };
+
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#000000] flex flex-col">
-      <style>{`
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
-        }
-        .marquee-scroll {
-          animation: scroll 15s linear infinite;
-        }
-      `}</style>
-
-      {/* MARQUEE TICKER */}
-      <div className="border-b-4 border-t-4 border-[#000000] bg-[#00E5FF] py-3 overflow-hidden">
-        <div className="flex marquee-scroll whitespace-nowrap">
-          <div className="text-black font-mono font-bold tracking-widest text-lg px-8">
-            • YOU CRUSHED IT • ANALYZE YOUR PERFORMANCE • KEEP IMPROVING • MASTER OBJECTIONS • YOU CRUSHED IT • ANALYZE YOUR PERFORMANCE • KEEP IMPROVING • MASTER OBJECTIONS •
-          </div>
-        </div>
-      </div>
-
-      {/* Header - Fixed */}
-      <div className="border-b-4 border-[#000000] px-8 py-8 bg-[#FAFAFA] sticky top-0 z-10">
+    <div className="min-h-screen text-black flex flex-col" style={{
+      backgroundImage: 'url(/net.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+    }}>
+      {/* Header */}
+      <div className="border-b-4 border-black px-8 py-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex-1 min-w-0">
-              <h1 className="font-serif text-3xl md:text-4xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>CALL COMPLETE</h1>
+              <h1 className="font-serif text-3xl md:text-4xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
+                CALL COMPLETE
+              </h1>
               <p className="font-mono text-xs uppercase tracking-wider text-gray-600 mt-2">
-                Session with {personaName || 'Unknown'} • {personaTitle || ''}
+                {personaName || 'Unknown'} • {personaTitle || ''}
               </p>
             </div>
             <div className="flex gap-3 flex-shrink-0">
               <button
                 onClick={() => router.push('/dashboard')}
-                className="border-4 border-[#000000] bg-white text-black font-mono text-xs font-bold uppercase tracking-wider px-6 py-3 hover:bg-gray-100 transition-colors"
+                className="border-4 border-black bg-white text-black font-mono text-xs font-bold uppercase tracking-wider px-6 py-3 hover:bg-gray-50 transition-colors"
               >
                 Dashboard
               </button>
               <button
                 onClick={handleNewCall}
-                className="border-4 border-[#000000] bg-[#FF2A85] text-white font-serif font-black text-sm uppercase px-6 py-3 flex items-center gap-2"
-                style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)' }}
+                className="border-4 border-black bg-black text-white font-serif font-black text-sm uppercase px-6 py-3 flex items-center gap-2"
+                style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.3)' }}
                 onMouseDown={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'translate(4px, 4px)';
                   (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
                 }}
                 onMouseUp={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '4px 4px 0px 0px rgba(0,0,0,1)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '4px 4px 0px 0px rgba(0,0,0,0.3)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '4px 4px 0px 0px rgba(0,0,0,1)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '4px 4px 0px 0px rgba(0,0,0,0.3)';
                 }}
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -105,232 +117,298 @@ export default function ResultsPage() {
               </button>
             </div>
           </div>
-
-          {/* Overall Score */}
-          {latestMetrics && (
-            <div className="border-4 border-[#000000] p-8" style={{ backgroundColor: '#FF2A85', color: '#FAFAFA', boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
-              <p className="font-mono text-xs uppercase font-bold tracking-widest mb-3 opacity-90">Total Score</p>
-              <p className="text-6xl md:text-7xl font-black" style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>
-                {latestMetrics.totalScore}
-              </p>
-              <p className="font-mono text-sm uppercase font-bold tracking-wide mt-2">/100</p>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Scrollable Content */}
+      {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="w-full px-8 py-12 space-y-8 max-w-7xl mx-auto">
-          {/* Transcript */}
-          <div className="border-4 border-[#000000] p-8" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
-            <h2 className="font-serif text-2xl font-black uppercase tracking-tighter mb-6" style={{ letterSpacing: '-0.01em' }}>
-              Conversation Transcript
-            </h2>
-            <div className="space-y-3 max-h-80 overflow-y-auto pr-4">
-              {messages.length === 0 ? (
-                <p className="font-mono text-sm text-gray-600">No messages recorded</p>
-              ) : (
-                messages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className="border-l-4 pl-4 py-2"
-                    style={{
-                      borderLeftColor: msg.speaker === 'user' ? '#FF2A85' : '#000000',
-                    }}
-                  >
-                    <p className="font-mono text-xs font-bold uppercase tracking-widest text-gray-600 mb-1">
-                      {msg.speaker === 'user' ? '👤 You' : '🤖 AI'}
-                    </p>
-                    <p className="leading-relaxed text-sm">{msg.text}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+        <div className="w-full px-8 py-12">
+          <div className="max-w-7xl mx-auto space-y-8">
+            {/* Score Card */}
+            {latestMetrics && (
+              <div className="border-4 border-black p-8 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-4">Total Score</p>
+                <p className="text-6xl md:text-7xl font-black" style={{ lineHeight: '1' }}>
+                  {latestMetrics.totalScore}
+                </p>
+                <p className="font-mono text-sm uppercase font-bold tracking-wide mt-3 text-gray-600">/100</p>
 
-          {/* Scoring Breakdown */}
-          {latestMetrics && (
-            <div>
-              <h2 className="font-serif text-2xl font-black uppercase tracking-tighter mb-6" style={{ letterSpacing: '-0.01em' }}>
-                Scoring Breakdown
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-                {/* Conversational Metrics */}
-                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-serif text-lg font-black uppercase">Conversational</h3>
-                      <p className="font-mono text-xs text-gray-600 mt-1">Speaking style & pacing</p>
-                    </div>
-                    <span className="text-3xl font-black">{latestMetrics.conversationalScore}/25</span>
-                  </div>
-                  <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
-                    <div className="flex justify-between">
-                      <span>Talk-to-Listen Ratio</span>
-                      <span className={latestMetrics.talkRatio * 100 > 65 || latestMetrics.talkRatio * 100 < 35 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>
-                        {Math.round(latestMetrics.talkRatio * 100)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Speaking Pace (WPM)</span>
-                      <span className={latestMetrics.wpm > 180 || latestMetrics.wpm < 120 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>
-                        {latestMetrics.wpm}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Questions Asked</span>
-                      <span className={latestMetrics.questionCount < 8 || latestMetrics.questionCount > 25 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>
-                        {latestMetrics.questionCount}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Discovery Depth */}
-                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-serif text-lg font-black uppercase">Discovery</h3>
-                      <p className="font-mono text-xs text-gray-600 mt-1">Question quality & depth</p>
-                    </div>
-                    <span className="text-3xl font-black">{latestMetrics.discoveryScore}/25</span>
-                  </div>
-                  <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
-                    <div className="flex justify-between">
-                      <span>Level 1 Questions</span>
-                      <span className="font-mono">{latestMetrics.level1Questions} × 1pt</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Level 2 Questions</span>
-                      <span className="font-mono">{latestMetrics.level2Questions} × 3pts</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Level 3 Questions</span>
-                      <span className="font-mono font-bold text-green-600">{latestMetrics.level3Questions} × 7pts</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Tactical Empathy */}
-                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-serif text-lg font-black uppercase">Empathy</h3>
-                      <p className="font-mono text-xs text-gray-600 mt-1">Negotiation techniques</p>
-                    </div>
-                    <span className="text-3xl font-black">{latestMetrics.empathyScore}/20</span>
-                  </div>
-                  <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
-                    <div className="flex justify-between">
-                      <span>Labeling</span>
-                      <span className="font-bold">{latestMetrics.labelingCount} × 5pts</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Mirroring</span>
-                      <span className="font-bold">{latestMetrics.mirroringCount} × 3pts</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Calibrated Qs</span>
-                      <span className="font-bold">{latestMetrics.calibratedQCount} × 5pts</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Persona Alignment */}
-                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-serif text-lg font-black uppercase">Persona Alignment</h3>
-                      <p className="font-mono text-xs text-gray-600 mt-1">Buyer value drivers</p>
-                    </div>
-                    <span className="text-3xl font-black">{latestMetrics.personaAlignmentScore}/10</span>
-                  </div>
-                  <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
-                    {personaName.includes('CFO') && (
-                      <div className="flex justify-between">
-                        <span>ROI Mentioned</span>
-                        <span className="font-bold">{latestMetrics.roiMentioned ? '✓' : '✗'}</span>
-                      </div>
+                {/* Score Interpretation */}
+                <div className="mt-6 pt-6 border-t-2 border-gray-300">
+                  <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-3">Score Interpretation</p>
+                  <div className="space-y-2 text-sm">
+                    {latestMetrics.totalScore >= 85 && (
+                      <p className="text-green-700 font-semibold">
+                        🎯 Excellent! You demonstrated strong discovery depth, authentic engagement, and persona alignment.
+                      </p>
                     )}
-                    {personaName.includes('Founder') && (
-                      <div className="flex justify-between">
-                        <span>Speed Mentioned</span>
-                        <span className="font-bold">{latestMetrics.speedMentioned ? '✓' : '✗'}</span>
-                      </div>
+                    {latestMetrics.totalScore >= 70 && latestMetrics.totalScore < 85 && (
+                      <p className="text-blue-700 font-semibold">
+                        ✓ Strong! You progressed through discovery levels and adapted well to the persona.
+                      </p>
                     )}
-                    {personaName.includes('SMB') && (
-                      <div className="flex justify-between">
-                        <span>Cost Mentioned</span>
-                        <span className="font-bold">{latestMetrics.costMentioned ? '✓' : '✗'}</span>
-                      </div>
+                    {latestMetrics.totalScore >= 40 && latestMetrics.totalScore < 70 && (
+                      <p className="text-orange-700 font-semibold">
+                        → Good effort. Keep working on deeper discovery questions and persona alignment.
+                      </p>
+                    )}
+                    {latestMetrics.totalScore < 40 && (
+                      <p className="text-gray-700 font-semibold">
+                        ⚠ Focus on asking more questions to uncover the prospect's real challenges and priorities.
+                      </p>
                     )}
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* Objection Handling */}
-                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-serif text-lg font-black uppercase">Objections</h3>
-                      <p className="font-mono text-xs text-gray-600 mt-1">Recovery & persuasion</p>
-                    </div>
-                    <span className="text-3xl font-black">{latestMetrics.objectionScore}/10</span>
+            {/* Call Info */}
+            {latestMetrics && (
+              <div className="border-4 border-black p-6 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-4">Call Details</p>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Duration</span>
+                    <span className="font-bold">{formatDuration(latestMetrics.duration)}</span>
                   </div>
-                  <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
-                    <div className="flex justify-between">
-                      <span>Objections Raised</span>
-                      <span className="font-mono">{latestMetrics.objectionsRaised}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Objections Handled</span>
-                      <span className={`font-bold ${latestMetrics.objectionsHandled > 0 ? 'text-green-600' : 'text-gray-600'}`}>
-                        {latestMetrics.objectionsHandled}
-                      </span>
-                    </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Date</span>
+                    <span className="font-bold">{formatDate(Date.now())}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Persona</span>
+                    <span className="font-bold">{personaName}</span>
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* Closing Execution */}
-                <div className="border-4 border-[#000000] p-6" style={{ backgroundColor: '#FAFAFA', boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-serif text-lg font-black uppercase">Closing</h3>
-                      <p className="font-mono text-xs text-gray-600 mt-1">Next steps & commitment</p>
+            {/* Metrics Grid */}
+            {latestMetrics && (
+              <div>
+                <h2 className="font-serif text-2xl font-black uppercase tracking-tighter mb-6" style={{ letterSpacing: '-0.02em' }}>
+                  Performance Metrics
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Conversational */}
+                  <div className="border-4 border-black p-6 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-serif text-lg font-black uppercase">Conversational</h3>
+                        <p className="font-mono text-xs text-gray-600 mt-1">Control, pacing & engagement</p>
+                      </div>
+                      <span className="text-3xl font-black">{latestMetrics.conversationalScore}/25</span>
                     </div>
-                    <span className="text-3xl font-black">{latestMetrics.closingScore}/10</span>
+                    <div className="space-y-3 border-t-2 border-gray-300 pt-4 text-xs">
+                      <div className="flex justify-between">
+                        <div>
+                          <span className="font-mono text-gray-600">Talk-to-Listen Ratio</span>
+                          <p className="text-gray-600 text-xs mt-0.5">Target: 45-55% (you talk/prospect talks)</p>
+                        </div>
+                        <span className="font-bold text-lg">{latestMetrics.talkToListen}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <div>
+                          <span className="font-mono text-gray-600">Speaking Pace (WPM)</span>
+                          <p className="text-gray-600 text-xs mt-0.5">Target: 120-160 words/min</p>
+                        </div>
+                        <span className="font-bold text-lg">{latestMetrics.wpm}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <div>
+                          <span className="font-mono text-gray-600">Questions Asked</span>
+                          <p className="text-gray-600 text-xs mt-0.5">Target: 8+ questions per call</p>
+                        </div>
+                        <span className="font-bold text-lg">{latestMetrics.questionCount}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
-                    <div className="flex justify-between">
-                      <span>Next Step Confirmed</span>
-                      <span className={`font-bold ${latestMetrics.nextStepConfirmed ? 'text-green-600' : 'text-red-600'}`}>
-                        {latestMetrics.nextStepConfirmed ? '✓' : '✗'}
-                      </span>
+
+                  {/* Discovery */}
+                  <div className="border-4 border-black p-6 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-serif text-lg font-black uppercase">Discovery</h3>
+                        <p className="font-mono text-xs text-gray-600 mt-1">Question progression & depth</p>
+                      </div>
+                      <span className="text-3xl font-black">{latestMetrics.discoveryScore || 0}/30</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Calendar Invite</span>
-                      <span className={`font-bold ${latestMetrics.calendarInviteAccepted ? 'text-green-600' : 'text-gray-600'}`}>
-                        {latestMetrics.calendarInviteAccepted ? '✓' : '—'}
-                      </span>
+                    <div className="space-y-3 border-t-2 border-gray-300 pt-4 text-xs">
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="font-mono text-gray-600">Level 1: Current State</span>
+                          <span className="font-mono">{latestMetrics.level1Questions} (1pt each)</span>
+                        </div>
+                        <p className="text-gray-600 text-xs">Learning about their existing situation</p>
+                      </div>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="font-mono text-gray-600">Level 2: Problems</span>
+                          <span className="font-mono">{latestMetrics.level2Questions} (3pts each)</span>
+                        </div>
+                        <p className="text-gray-600 text-xs">Uncovering pain points & challenges</p>
+                      </div>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="font-mono font-bold text-gray-800">Level 3: Impact</span>
+                          <span className="font-mono font-bold">{latestMetrics.level3Questions} (7pts each)</span>
+                        </div>
+                        <p className="text-gray-600 text-xs">Connecting to business outcomes & emotions</p>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Mutual Action Plan</span>
-                      <span className={`font-bold ${latestMetrics.mutualActionPlan ? 'text-green-600' : 'text-gray-600'}`}>
-                        {latestMetrics.mutualActionPlan ? '✓' : '—'}
-                      </span>
+                  </div>
+
+                  {/* Empathy */}
+                  <div className="border-4 border-black p-6 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-serif text-lg font-black uppercase">Empathy</h3>
+                        <p className="font-mono text-xs text-gray-600 mt-1">Understanding & tactical skills</p>
+                      </div>
+                      <span className="text-3xl font-black">{latestMetrics.empathyScore}/20</span>
+                    </div>
+                    <div className="space-y-3 border-t-2 border-gray-300 pt-4 text-xs">
+                      <div className="flex justify-between">
+                        <span className="font-mono text-gray-600">Labeling</span>
+                        <span className="font-bold">{latestMetrics.labelingCount} uses (4pts each)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-mono text-gray-600">Mirroring</span>
+                        <span className="font-bold">{latestMetrics.mirroringCount} uses (2pts each)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-mono text-gray-600">Calibrated Qs</span>
+                        <span className="font-bold">{latestMetrics.calibratedQCount} uses (4pts each)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Persona Alignment */}
+                  <div className="border-4 border-black p-6 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-serif text-lg font-black uppercase">Alignment</h3>
+                        <p className="font-mono text-xs text-gray-600 mt-1">Buyer value drivers</p>
+                      </div>
+                      <span className="text-3xl font-black">{latestMetrics.personaAlignmentScore}/10</span>
+                    </div>
+                    <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
+                      {personaName.includes('CFO') && (
+                        <div className="flex justify-between">
+                          <span>ROI Mentioned</span>
+                          <span className="font-bold">{latestMetrics.roiMentioned ? '✓' : '✗'}</span>
+                        </div>
+                      )}
+                      {personaName.includes('Founder') && (
+                        <div className="flex justify-between">
+                          <span>Speed Mentioned</span>
+                          <span className="font-bold">{latestMetrics.speedMentioned ? '✓' : '✗'}</span>
+                        </div>
+                      )}
+                      {personaName.includes('SMB') && (
+                        <div className="flex justify-between">
+                          <span>Cost Mentioned</span>
+                          <span className="font-bold">{latestMetrics.costMentioned ? '✓' : '✗'}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Objections */}
+                  <div className="border-4 border-black p-6 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-serif text-lg font-black uppercase">Objections</h3>
+                        <p className="font-mono text-xs text-gray-600 mt-1">Recovery & persuasion</p>
+                      </div>
+                      <span className="text-3xl font-black">{latestMetrics.objectionScore}/10</span>
+                    </div>
+                    <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
+                      <div className="flex justify-between">
+                        <span>Objections Raised</span>
+                        <span className="font-mono">{latestMetrics.objectionsRaised}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Objections Handled</span>
+                        <span className="font-bold">{latestMetrics.objectionsHandled}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Closing */}
+                  <div className="border-4 border-black p-6 bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-serif text-lg font-black uppercase">Closing</h3>
+                        <p className="font-mono text-xs text-gray-600 mt-1">Next steps & commitment</p>
+                      </div>
+                      <span className="text-3xl font-black">{latestMetrics.closingScore}/10</span>
+                    </div>
+                    <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
+                      <div className="flex justify-between">
+                        <span>Next Step Confirmed</span>
+                        <span className="font-bold">{latestMetrics.nextStepConfirmed ? '✓' : '✗'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Calendar Invite</span>
+                        <span className="font-bold">{latestMetrics.calendarInviteAccepted ? '✓' : '—'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Mutual Action Plan</span>
+                        <span className="font-bold">{latestMetrics.mutualActionPlan ? '✓' : '—'}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Transcript */}
+            <div className="border-4 border-black bg-white" style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)' }}>
+              <button
+                onClick={() => toggleSection('transcript')}
+                className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
+              >
+                <h3 className="font-serif text-lg font-black uppercase">Conversation Transcript</h3>
+                <ChevronDown
+                  className="w-5 h-5 transition-transform"
+                  style={{
+                    transform: expandedSections.transcript ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                />
+              </button>
+              {expandedSections.transcript && (
+                <div className="border-t-4 border-gray-300 p-6 bg-white">
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {messages.length === 0 ? (
+                      <p className="font-mono text-sm text-gray-600">No messages recorded</p>
+                    ) : (
+                      messages.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          className="border-l-4 pl-4 py-2"
+                          style={{
+                            borderLeftColor: msg.speaker === 'user' ? '#000000' : '#CCCCCC',
+                          }}
+                        >
+                          <p className="font-mono text-xs font-bold uppercase tracking-widest text-gray-600 mb-1">
+                            {msg.speaker === 'user' ? '👤 You' : '🤖 AI'}
+                          </p>
+                          <p className="leading-relaxed text-sm">{msg.text}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* FOOTER */}
-      <footer className="border-t-4 border-[#000000] py-8 px-8 mt-12">
-        <div className="max-w-7xl mx-auto text-center font-mono text-xs uppercase font-bold tracking-widest">
+      {/* Footer */}
+      <footer className="border-t-4 border-black py-8 px-8 bg-white">
+        <div className="max-w-7xl mx-auto text-center font-mono text-xs uppercase font-bold tracking-widest text-gray-600">
           CLOSERR © 2024 | TRACK YOUR PROGRESS
         </div>
       </footer>

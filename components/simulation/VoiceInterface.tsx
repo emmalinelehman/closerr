@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mic, MicOff, Phone, Volume2, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useCallStore } from '@/lib/state/callStore';
+import { useCallStore, CallMetrics } from '@/lib/state/callStore';
 import PersonaDisplay from './PersonaDisplay';
 import Transcript from './Transcript';
 import CallTimer from './CallTimer';
 import { useSimpleTranscription } from '@/hooks/useSimpleTranscription';
+import { getPersonaContext } from '@/lib/config/personas';
+import { Product } from '@/lib/config/productSchema';
 
 interface VoiceInterfaceProps {
   personaId: string;
@@ -22,17 +24,7 @@ interface VoiceInterfaceProps {
     results: string;
     audience: string;
   };
-}
-
-interface CallMetrics {
-  talkToListen: number;
-  wpm: number;
-  sentiment: 'Positive' | 'Neutral' | 'Negative';
-  questionCount: number;
-  labelingUsed: boolean;
-  roiMentioned: boolean;
-  speedMentioned: boolean;
-  costMentioned: boolean;
+  product?: Product;
 }
 
 async function playAudioBlob(blob: Blob): Promise<void> {
@@ -65,6 +57,7 @@ export default function VoiceInterface({
   personaName,
   personaTitle,
   productBrief,
+  product,
 }: VoiceInterfaceProps) {
   const router = useRouter();
   const store = useCallStore();
@@ -76,6 +69,10 @@ export default function VoiceInterface({
     Array<{ role: 'user' | 'assistant'; content: string }>
   >([]);
   const [showContext, setShowContext] = useState(false);
+  const [showPersonaContext, setShowPersonaContext] = useState(false);
+  const [showProductContext, setShowProductContext] = useState(false);
+  const personaContext = getPersonaContext(personaId);
+  const selectedProduct = product;
 
   const { isRecording, error: recordingError, startRecording, stopRecording } = useSimpleTranscription();
 
@@ -193,6 +190,7 @@ export default function VoiceInterface({
           personaId,
           conversationHistory: newHistory,
           productBrief: productBriefString,
+          product: selectedProduct,
         }),
       });
 
@@ -347,7 +345,75 @@ export default function VoiceInterface({
               {isAudioPlaying ? '🔊 Speaking' : isProcessing ? '⚙️ Thinking' : isRecording ? '🎙️ Recording' : '✓ Ready'}
             </p>
 
-            {/* Mobile Context */}
+            {/* Mobile Persona Context */}
+            {personaContext && (
+              <div className="w-full bg-[#f9f9f9] border-2 border-[#00E5FF]/30 rounded-lg overflow-hidden mb-3">
+                <button
+                  onClick={() => setShowPersonaContext(!showPersonaContext)}
+                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-[#f0f0f0] transition-colors"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="h-1 w-1 rounded-full bg-[#00E5FF] flex-shrink-0"></div>
+                    <h4 className="text-xs font-semibold text-[#00E5FF] uppercase tracking-wider truncate">Company Context</h4>
+                  </div>
+                  {showPersonaContext ? (
+                    <ChevronUp className="w-4 h-4 text-[#00E5FF] flex-shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-[#00E5FF] flex-shrink-0" />
+                  )}
+                </button>
+                {showPersonaContext && (
+                  <div className="px-3 py-2 border-t border-[#00E5FF]/30 space-y-1.5 text-xs max-h-40 overflow-y-auto">
+                    <div>
+                      <p className="font-semibold text-[#00E5FF] mb-0.5">Challenge</p>
+                      <p className="text-[#333333] text-xs">{personaContext.keyChallenge}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#00E5FF] mb-0.5">Budget</p>
+                      <p className="text-[#333333] text-xs">{personaContext.budget}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mobile Your Product */}
+            {selectedProduct && (
+              <div className="w-full bg-[#f9f9f9] border-2 border-[#FF5E00]/30 rounded-lg overflow-hidden mb-3">
+                <button
+                  onClick={() => setShowProductContext(!showProductContext)}
+                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-[#f0f0f0] transition-colors"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="h-1 w-1 rounded-full bg-[#FF5E00] flex-shrink-0"></div>
+                    <h4 className="text-xs font-semibold text-[#FF5E00] uppercase tracking-wider truncate">Your Product</h4>
+                  </div>
+                  {showProductContext ? (
+                    <ChevronUp className="w-4 h-4 text-[#FF5E00] flex-shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-[#FF5E00] flex-shrink-0" />
+                  )}
+                </button>
+                {showProductContext && (
+                  <div className="px-3 py-2 border-t border-[#FF5E00]/30 space-y-1.5 text-xs max-h-40 overflow-y-auto">
+                    <div>
+                      <p className="font-semibold text-[#FF5E00] mb-0.5">Product</p>
+                      <p className="text-[#333333] font-bold text-xs">{selectedProduct.name}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#FF5E00] mb-0.5">Pricing</p>
+                      <p className="text-[#333333] text-xs font-semibold">{selectedProduct.pricingCost}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#FF5E00] mb-0.5">Implementation</p>
+                      <p className="text-[#333333] text-xs">{selectedProduct.implementationTime}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mobile Product Context (old productBrief) */}
             {productBrief && (
               <div className="w-full bg-[#f9f9f9] border-2 border-[#616161]/30 rounded-lg overflow-hidden">
                 <button
@@ -472,7 +538,124 @@ export default function VoiceInterface({
             </p>
           </div>
 
-          {/* Context Drawer */}
+          {/* Persona Context Drawer */}
+          {personaContext && (
+            <div className="w-full bg-[#f9f9f9] border-2 border-[#00E5FF]/30 rounded-lg overflow-hidden mb-4">
+              <button
+                onClick={() => setShowPersonaContext(!showPersonaContext)}
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#f0f0f0] transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="h-1 w-1 rounded-full bg-[#00E5FF]"></div>
+                  <h4 className="text-xs font-semibold text-[#00E5FF] uppercase tracking-wider">Company Context</h4>
+                </div>
+                {showPersonaContext ? (
+                  <ChevronUp className="w-4 h-4 text-[#00E5FF]" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-[#00E5FF]" />
+                )}
+              </button>
+              {showPersonaContext && (
+                <div className="px-4 py-3 border-t border-[#00E5FF]/30 space-y-2 text-xs max-h-64 overflow-y-auto">
+                  <div>
+                    <p className="font-semibold text-[#00E5FF] mb-1">Role</p>
+                    <p className="text-[#333333]">{personaContext.title}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#00E5FF] mb-1">Company</p>
+                    <p className="text-[#333333]">{personaContext.company} ({personaContext.companySize} people)</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#00E5FF] mb-1">Key Challenge</p>
+                    <p className="text-[#333333] leading-relaxed">{personaContext.keyChallenge}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#00E5FF] mb-1">Budget</p>
+                    <p className="text-[#333333]">{personaContext.budget} ({personaContext.budgetStatus})</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#00E5FF] mb-1">Q1/Q2 Priorities</p>
+                    <ul className="text-[#333333] space-y-1 list-disc list-inside">
+                      {personaContext.q1_q2_priorities.slice(0, 3).map((p, i) => (
+                        <li key={i} className="text-xs leading-snug">{p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#00E5FF] mb-1">Pain Points</p>
+                    <ul className="text-[#333333] space-y-1 list-disc list-inside">
+                      {personaContext.painPoints.slice(0, 2).map((p, i) => (
+                        <li key={i} className="text-xs leading-snug">{p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Your Product Drawer */}
+          {selectedProduct && (
+            <div className="w-full bg-[#f9f9f9] border-2 border-[#FF5E00]/30 rounded-lg overflow-hidden mb-4">
+              <button
+                onClick={() => setShowProductContext(!showProductContext)}
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#f0f0f0] transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="h-1 w-1 rounded-full bg-[#FF5E00]"></div>
+                  <h4 className="text-xs font-semibold text-[#FF5E00] uppercase tracking-wider">Your Product</h4>
+                </div>
+                {showProductContext ? (
+                  <ChevronUp className="w-4 h-4 text-[#FF5E00]" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-[#FF5E00]" />
+                )}
+              </button>
+              {showProductContext && (
+                <div className="px-4 py-3 border-t border-[#FF5E00]/30 space-y-2 text-xs max-h-64 overflow-y-auto">
+                  <div>
+                    <p className="font-semibold text-[#FF5E00] mb-1">Product</p>
+                    <p className="text-[#333333] font-bold">{selectedProduct.name}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#FF5E00] mb-1">Category</p>
+                    <p className="text-[#333333]">{selectedProduct.category}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#FF5E00] mb-1">Pricing</p>
+                    <p className="text-[#333333] font-semibold">{selectedProduct.pricingCost}</p>
+                    <p className="text-[#666666] text-xs">({selectedProduct.pricingModel})</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#FF5E00] mb-1">Implementation</p>
+                    <p className="text-[#333333]">{selectedProduct.implementationTime}</p>
+                  </div>
+                  {selectedProduct.keyBenefits.length > 0 && (
+                    <div>
+                      <p className="font-semibold text-[#FF5E00] mb-1">Key Benefits</p>
+                      <ul className="text-[#333333] space-y-1 list-disc list-inside">
+                        {selectedProduct.keyBenefits.map((benefit, i) => (
+                          <li key={i} className="text-xs leading-snug">{benefit}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {selectedProduct.naturalConcerns.length > 0 && (
+                    <div>
+                      <p className="font-semibold text-[#FF5E00] mb-1">Concerns to Expect</p>
+                      <ul className="text-[#333333] space-y-1 list-disc list-inside">
+                        {selectedProduct.naturalConcerns.slice(0, 2).map((concern, i) => (
+                          <li key={i} className="text-xs leading-snug">{concern}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Product Context Drawer */}
           {productBrief && (
             <div className="w-full bg-[#f9f9f9] border-2 border-[#616161]/30 rounded-lg overflow-hidden mt-auto">
               <button
@@ -565,6 +748,51 @@ export default function VoiceInterface({
               <p className="text-xs text-[#424242] uppercase font-mono tracking-wide mb-2">Questions Asked</p>
               <p className="text-3xl font-bold text-[#424242]">{metrics?.questionCount || 0}</p>
             </div>
+
+            {/* Discovery Depth - NEW */}
+            {metrics && (metrics.level1Questions || metrics.level2Questions || metrics.level3Questions) && (
+              <div className="p-4 rounded-lg border border-l-4 border-[#e0e0e0] border-l-[#9C27B0] bg-[#9C27B0]/5 hover:bg-[#9C27B0]/10 transition-colors">
+                <p className="text-xs text-[#9C27B0] uppercase font-mono tracking-wide mb-3">Discovery Progression</p>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-xs text-[#9C27B0] mb-1">L1</p>
+                    <p className="text-2xl font-bold text-[#9C27B0]">{metrics.level1Questions || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[#9C27B0] mb-1">L2</p>
+                    <p className="text-2xl font-bold text-[#9C27B0]">{metrics.level2Questions || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[#9C27B0] mb-1">L3</p>
+                    <p className="text-2xl font-bold text-[#9C27B0]">{metrics.level3Questions || 0}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Empathy Techniques - NEW */}
+            {metrics && (metrics.labelingCount || metrics.mirroringCount || metrics.calibratedQCount) && (
+              <div className="p-4 rounded-lg border border-l-4 border-[#e0e0e0] border-l-[#FF6B35] bg-[#FF6B35]/5 hover:bg-[#FF6B35]/10 transition-colors">
+                <p className="text-xs text-[#FF6B35] uppercase font-mono tracking-wide mb-3">Empathy Techniques</p>
+                <div className="space-y-1 text-xs">
+                  {metrics.labelingCount > 0 && <p className="text-[#FF6B35]">✓ Labeling: {metrics.labelingCount}</p>}
+                  {metrics.mirroringCount > 0 && <p className="text-[#FF6B35]">✓ Mirroring: {metrics.mirroringCount}</p>}
+                  {metrics.calibratedQCount > 0 && <p className="text-[#FF6B35]">✓ Calibrated Qs: {metrics.calibratedQCount}</p>}
+                </div>
+              </div>
+            )}
+
+            {/* Persona Alignment - NEW */}
+            {metrics && (metrics.roiMentioned || metrics.speedMentioned || metrics.costMentioned) && (
+              <div className="p-4 rounded-lg border border-l-4 border-[#e0e0e0] border-l-[#4CAF50] bg-[#4CAF50]/5 hover:bg-[#4CAF50]/10 transition-colors">
+                <p className="text-xs text-[#4CAF50] uppercase font-mono tracking-wide mb-2">Alignment Signals</p>
+                <div className="space-y-1 text-xs">
+                  {metrics.roiMentioned && <p className="text-[#4CAF50] font-semibold">💰 ROI/Financial mentioned</p>}
+                  {metrics.speedMentioned && <p className="text-[#4CAF50] font-semibold">⚡ Speed/Urgency mentioned</p>}
+                  {metrics.costMentioned && <p className="text-[#4CAF50] font-semibold">📊 Budget/Cost mentioned</p>}
+                </div>
+              </div>
+            )}
 
             {/* Status Indicator */}
             <div className="mt-6 p-3 rounded-lg bg-[#f0f0f0] border border-[#e0e0e0] flex items-center gap-2">

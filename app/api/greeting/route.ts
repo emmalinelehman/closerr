@@ -1,14 +1,18 @@
+import { getPersonaContext } from '@/lib/config/personas';
+
 interface GreetingRequest {
   personaId: string;
-  personaName: string;
 }
 
-const getGreeting = (personaId: string, personaName: string): string => {
+const getGreeting = (personaId: string): string => {
+  const context = getPersonaContext(personaId);
+  const name = context?.name || 'I';
+
   const greetings: Record<string, string> = {
-    'skeptical-cfo': `Hi, thanks for jumping on a quick call. I'm ${personaName}. I've got a few minutes, so why don't you walk me through what you're pitching?`,
-    'busy-founder': `Hey, ${personaName} here. I've got about 10 minutes before my next thing. What's this about?`,
-    'price-sensitive': `Hi, I'm ${personaName}. Appreciate you taking the time to chat with us. So what are we looking at today?`,
-    'drew': `${personaName} here. I'm slammed as always, so let's make this quick. What's the pitch?`,
+    'skeptical-cfo': `Hey, ${name} here. Thanks for making time. So what's this about?`,
+    'busy-founder': `${name} speaking. I've got about 10 minutes, so walk me through what you've got.`,
+    'price-sensitive': `Hi, it's ${name}. Happy to chat—what's on your mind?`,
+    'drew': `${name} here. Look, I've got a busy schedule, so let's jump in. What are you selling?`,
   };
 
   return greetings[personaId] || greetings['skeptical-cfo'];
@@ -18,16 +22,16 @@ export async function POST(request: Request) {
   console.log('👋 [GREETING] POST received');
   try {
     const body: GreetingRequest = await request.json();
-    const { personaId, personaName } = body;
+    const { personaId } = body;
 
-    if (!personaId || !personaName) {
+    if (!personaId) {
       return Response.json(
-        { error: 'Missing personaId or personaName' },
+        { error: 'Missing personaId' },
         { status: 400 }
       );
     }
 
-    const greeting = getGreeting(personaId, personaName);
+    const greeting = getGreeting(personaId);
     console.log('👋 [GREETING] Generated:', greeting);
 
     return Response.json({ greeting });

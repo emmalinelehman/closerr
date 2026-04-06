@@ -118,19 +118,6 @@ const PERSONAS: Persona[] = [
 export default function Home() {
   const router = useRouter();
   const [selectedBuyer, setSelectedBuyer] = useState<string | null>(null);
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const navScale = Math.max(0.6, 1 - scrollY / 500);
-  const navPadding = Math.max(4, 8 - scrollY / 200);
 
   const handleStartSimulation = () => {
     if (selectedBuyer) {
@@ -142,38 +129,31 @@ export default function Home() {
     <div className="min-h-screen bg-white text-black">
       <style>{animationStyles}</style>
       {/* NAVIGATION */}
-      <nav
-        className="border-b border-gray-300 px-8 md:px-12 fixed top-0 left-0 right-0 bg-white z-50 transition-all duration-300"
-        style={{
-          padding: `${navPadding}px 2rem`,
-        }}
-      >
+      <nav className="border-b border-gray-300 px-8 bg-white z-50 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div
-            className="font-serif font-bold transition-all duration-300"
-            style={{
-              fontSize: `clamp(1rem, ${3 * navScale}vw, ${2 * navScale}rem)`,
-              transform: `scale(${navScale})`,
-              transformOrigin: 'left',
-            }}
-          >
+          <div className="font-serif text-lg font-black uppercase" style={{ letterSpacing: '-0.01em' }}>
             CLOSERR
           </div>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="font-mono text-xs font-bold uppercase tracking-wider text-gray-600 hover:text-black transition-colors"
-          >
-            Dashboard
-          </button>
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => router.push('/how-it-works')}
+              className="font-mono text-xs font-bold uppercase tracking-wider text-gray-600 hover:text-black transition-colors"
+            >
+              How It Works
+            </button>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="font-mono text-xs font-bold uppercase tracking-wider text-gray-600 hover:text-black transition-colors"
+            >
+              Dashboard
+            </button>
+          </div>
         </div>
       </nav>
 
-      {/* Spacer to prevent content from hiding behind fixed nav */}
-      <div style={{ height: `${navPadding * 2}px` }}></div>
-
       {/* HERO SECTION */}
       <section
-        className="border-b border-gray-300 h-screen px-8 md:px-12 relative animate-fade-in flex items-center mt-16"
+        className="border-b border-gray-300 h-screen px-8 md:px-12 relative animate-fade-in flex items-center"
         style={{
           backgroundImage: 'url(/barbs.jpg)',
           backgroundSize: 'cover',

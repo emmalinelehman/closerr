@@ -1,4 +1,6 @@
 import { OpenAI } from 'openai';
+import { getPersonaContext } from '@/lib/config/personas';
+import { Product } from '@/lib/config/productSchema';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,6 +11,7 @@ interface ChatRequest {
   personaId: string;
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>;
   productBrief?: string;
+  product?: Product;
 }
 
 interface MetricsResponse {
@@ -18,7 +21,7 @@ interface MetricsResponse {
   questionCount: number;
   conversationalScore: number;
 
-  // Discovery Depth (25 pts)
+  // Discovery Depth (30 pts max)
   level1Questions: number;
   level2Questions: number;
   level3Questions: number;
@@ -41,87 +44,132 @@ interface MetricsResponse {
   costMentioned: boolean;
   personaAlignmentScore: number;
 
+  // Objection Handling (10 pts)
+  objectionsRaised: number;
+  objectionsHandled: number;
+  objectionScore: number;
+
+  // Closing (10 pts)
+  nextStepConfirmed: boolean;
+  calendarInviteAccepted: boolean;
+  mutualActionPlan: boolean;
+  closingScore: number;
+
   // Overall
   totalScore: number;
 }
 
-const getPersonaSystemPrompt = (personaId: string): string => {
-  const prompts: Record<string, string> = {
-    'skeptical-cfo': `You are a CFO in a first sales meeting. You have no prior knowledge of this product or solution. You're listening with an open mind, but naturally cautious about cost and ROI implications.
+const getPersonaSystemPrompt = (personaId: string, product?: Product): string => {
+  const context = getPersonaContext(personaId);
 
-Your role: Be a realistic cold prospect who is genuinely hearing about this for the first time. You may:
-- Ask clarifying questions about what the rep is proposing
-- Express skepticism until you understand the value
-- Challenge assumptions or costs
-- Show interest if the rep educates you well
-- Probe on outcomes and timeline naturally
+  if (!context) {
+    return `You are a skeptical business professional in a first sales meeting. You have no prior knowledge of this product.
+Be realistic, authentic, and conversational. Ask clarifying questions, reference your business context when relevant, and acknowledge good points the rep makes.
+Keep responses natural: 1-2 sentences. React to what they're actually saying, not to pre-scripted knowledge.`;
+  }
 
-Be authentic and conversational. React to what they're actually saying, not to pre-existing knowledge. 1-2 sentences per response.`,
+  let productSection = '';
+  if (product) {
+    productSection = `
 
-    'busy-founder': `You are a Founder in a first sales meeting. You have no prior knowledge of this product. You're direct, time-conscious, and skeptical of new vendor pitches—but you're genuinely curious if something could move the needle.
+THE REP IS PITCHING:
+Product: ${product.name} (${product.category})
+What it does: ${product.description}
+Pricing: ${product.pricingCost} (${product.pricingModel})
+Implementation: ${product.implementationTime}
+Key benefits they'll mention: ${product.keyBenefits.join(', ')}
 
-Your role: Be a realistic cold prospect. You should:
-- Ask what the rep is actually selling and why it matters
-- Be honest about your constraints and skepticism
-- Show interest only if they articulate clear value
-- Challenge vague claims
-- Lean in if they address your real concerns thoughtfully
+NATURAL CONCERNS YOU SHOULD HAVE:
+${product.naturalConcerns.map(c => `- ${c}`).join('\n')}
 
-You're impatient but fair. React authentically to what they're pitching. 1-2 sentences, direct and real.`,
+APPROACH TO THIS PITCH:
+- You're hearing about this product for the first time (no prior knowledge)
+- React authentically to what they're saying
+- If benefits matter to you, acknowledge that they caught your attention
+- If concerns aren't addressed, raise them naturally as the conversation goes on
+- Reference specific concerns from your situation when relevant`;
+  }
 
-    'price-sensitive': `You are an SMB Owner in a first sales meeting. You have no prior knowledge of this product. You want to solve real problems but are cautious about spending and need to justify any budget commitment.
+  return `You are ${context.name}, ${context.title} at ${context.company}, a ${context.companySize}-person ${context.industry} company.
 
-Your role: Be a realistic cold prospect who is learning about this for the first time. You should:
-- Ask what's being proposed and why
-- Express genuine cost concerns naturally
-- Show interest in value but remain budget-conscious
-- Ask practical questions about implementation and ROI
-- Be open if they make a compelling case
+COMPANY CONTEXT (reference when relevant, but don't info-dump):
+- Founded ${context.foundedYear}, ${context.stage} stage, ${context.growthRate} growth
+- ${context.annualRevenue} ARR (${context.fundingStatus})
+- Team: ${context.teamSize} people, I manage ${context.directReports} direct reports
+- Current challenge: ${context.keyChallenge}
+- Pain points: ${context.painPoints.join(', ')}
+- Q1/Q2 priorities: ${context.q1_q2_priorities.join(', ')}
+- Budget: ${context.budget} (${context.budgetStatus})
 
-You're not dismissive—you're someone running a business trying to make smart investments. React to what they actually tell you. 1-2 sentences, real.`,
+CRITICAL: HOW TO RESPOND NATURALLY
+- You have this company context in your head (you know your situation), but DON'T recite it all at once
+- When they ask "tell me about yourself" or "tell me about your company", give a 1-2 sentence natural answer
+  - Example: "I'm the CFO at DataSync. We're a 150-person SaaS company dealing with some data infrastructure challenges."
+  - Don't list all your pain points, budget, priorities—that's boring and unrealistic
+- Reveal details gradually as they ask follow-up questions
+  - If they ask "what's the biggest challenge?", then tell them about your data pipeline issue
+  - If they ask "how much time do you have?", then mention implementation timeline preference
+  - If they ask "what's your budget like?", then mention budget status
+- Keep each response 1-2 sentences. Natural human conversation.
+- Reference your situation when it's relevant to what they're saying, not unprompted
 
-    'drew': `You are Drew, a no-nonsense Tech Founder in a first sales meeting. You have zero prior knowledge of this product. You're skeptical of vendor pitches but fair—you'll listen if something could genuinely solve a problem.
+YOUR PERSONALITY:
+- I'm ${context.decisionStyle}
+- I communicate like: ${context.communicationStyle}
+- When challenged: ${context.objectionStyle}
 
-Your role: Be a realistic cold prospect. You should:
-- Ask what they're selling and why it matters to you specifically
-- Be direct about your constraints and skepticism
-- Challenge anything that sounds like standard sales fluff
-- Show real interest only if they understand your world
-- Keep it brief—you're busy
-
-You're impatient but not hostile. React authentically to their pitch. 1-2 sentences, sharp and direct.`,
-  };
-
-  return prompts[personaId] || prompts['skeptical-cfo'];
+KEY PRINCIPLE: You're a real person with real constraints, not a walking company brief.
+Be genuine. Ask them questions back. Show curiosity about what they're selling.
+If something doesn't make sense, push back naturally.${productSection}`;
 };
 
+
 // Detect question level based on keywords
+// Level 1: Situational Awareness - learning about current state
+// Level 2: Problem Uncovering - understanding pain points and inefficiencies
+// Level 3: Business Impact - connecting to outcomes and emotions
 function detectQuestionLevel(text: string): 'level1' | 'level2' | 'level3' | 'none' {
   const lower = text.toLowerCase();
 
-  // Level 3: Gap, Impact, Emotional drivers
+  // Level 3: Business Impact & Outcomes
   const level3Keywords = [
-    'should this process look',
     'what does this cost',
     'how is this affecting',
     'biggest blocker',
     'what happens if nothing changes',
     'how would you solve',
+    'impact of',
+    'affects your',
+    'affects the',
+    "what's at stake",
+    'if nothing changes',
+    'cost you',
+    'timeline for',
+    'strategic priority',
   ];
   if (level3Keywords.some(kw => lower.includes(kw))) return 'level3';
 
-  // Level 2: Problem exploration
+  // Level 2: Problem Uncovering
   const level2Keywords = [
     'what challenges',
-    'where\'s the friction',
-    'what doesn\'t work',
-    'what\'s your current',
+    "where's the friction",
+    'where is the friction',
+    "what doesn't work",
+    "what's your current",
+    'what is your current',
     'how are you handling',
+    'how do you handle',
     'what problems',
+    'frustrated',
+    'pain point',
+    'struggle',
+    'broken',
+    'lose time',
+    'lose money',
   ];
   if (level2Keywords.some(kw => lower.includes(kw))) return 'level2';
 
-  // Level 1: Any question
+  // Level 1: Situational Awareness
   if (text.includes('?')) return 'level1';
 
   return 'none';
@@ -174,6 +222,30 @@ function analyzeMetrics(transcript: string, conversationHistory: Array<{ role: s
 
   const severeViolations = /(we're the best|trust me)/gi.test(transcript) ? 1 : 0;
 
+  // Objection Handling Detection
+  const objectionKeywords = /concern|worried about|hesitant|too expensive|can't afford|don't have|we're happy with|don't need|works fine/gi;
+  const objectionMatches = transcript.match(objectionKeywords) || [];
+  const objectionsRaised = objectionMatches.length;
+
+  // Closing Detection
+  const closingKeywords = /let's schedule|calendar invite|set up a call|next week|next meeting|let's move forward|i'll send|can you send|schedule a call/gi;
+  const closingMatches = transcript.match(closingKeywords) || [];
+  const closingIndicators = closingMatches.length;
+
+  let objectionsHandled = 0;
+  if (closingIndicators > 0 && objectionsRaised > 0) {
+    objectionsHandled = Math.min(objectionsRaised, closingIndicators);
+  }
+
+  const objectionScore = objectionsRaised > 0
+    ? Math.min(10, Math.round((objectionsHandled / objectionsRaised) * 10))
+    : 0;
+
+  const closingScore = closingIndicators > 0 ? Math.min(10, closingIndicators * 3) : 0;
+  const nextStepConfirmed = /next week|next meeting|schedule|call back|follow up/.test(transcript);
+  const calendarInviteAccepted = /calendar|invite|send|propose|email/.test(transcript);
+  const mutualActionPlan = /action plan|mutual|both agree|committed/.test(transcript);
+
   // Sentiment analysis
   const positive = /great|excellent|perfect|amazing|love|fantastic|awesome/gi;
   const negative = /hate|terrible|awful|bad|disappointed|frustrated/gi;
@@ -187,34 +259,53 @@ function analyzeMetrics(transcript: string, conversationHistory: Array<{ role: s
   const costMentioned = /cost|price|budget|expensive|affordable|fee/gi.test(transcript);
 
   // Calculate Conversational Score (25 pts max)
+  // Rebalanced to be achievable: solid call = 20+, great call = 23-25
   let conversationalScore = 25;
-  if (talkToListen > 65) conversationalScore -= 10;
-  if (talkToListen < 35) conversationalScore -= 5;
-  if (wpm > 180) conversationalScore -= 5;
-  if (wpm < 120) conversationalScore -= 5;
-  if (questionCount < 8) conversationalScore -= 10;
-  if (questionCount > 25) conversationalScore -= 5;
+  if (talkToListen > 70) conversationalScore -= 5; // Harsh only if really dominant
+  if (talkToListen < 30) conversationalScore -= 5; // Lost control
+  if (wpm > 190) conversationalScore -= 3; // Too fast
+  if (wpm < 100) conversationalScore -= 3; // Too slow
+  if (questionCount < 5) conversationalScore -= 8; // Very few questions
+  if (questionCount < 8) conversationalScore -= 3; // Fewer than ideal but not terrible
+  if (questionCount > 30) conversationalScore -= 5; // Machine-gunning
   conversationalScore = Math.max(0, conversationalScore);
 
-  // Calculate Discovery Score (25 pts max)
-  const discoveryScore = Math.min(25, level1Questions * 1 + level2Questions * 3 + level3Questions * 7);
+  // Calculate Discovery Score (25 pts baseline, can exceed for exceptional progress)
+  // Rewards progression: L1=1pt, L2=3pts, L3=7pts. Cap at 30 for practicality
+  const discoveryScore = Math.min(30, level1Questions * 1 + level2Questions * 3 + level3Questions * 7);
 
   // Calculate Empathy Score (20 pts max)
+  // Rebalanced: show empathy techniques = good, penalties only for egregious mistakes
   let empathyScore = 0;
-  empathyScore += labelingCount * 5;
-  empathyScore += mirroringCount * 3;
-  empathyScore += calibratedQCount * 5;
-  empathyScore -= penaltyCount * 5;
-  empathyScore -= severeViolations * 10;
+  empathyScore += labelingCount * 4; // Reduced from 5
+  empathyScore += mirroringCount * 2; // Reduced from 3
+  empathyScore += calibratedQCount * 4; // Reduced from 5
+  empathyScore -= penaltyCount * 2; // Reduced from 5 (less punitive)
+  empathyScore -= severeViolations * 8; // Reduced from 10
   empathyScore = Math.min(20, Math.max(0, empathyScore));
 
   // Calculate Persona Alignment Score (10 pts max)
-  let personaAlignmentScore = 10;
-  if (personaId === 'skeptical-cfo' && !roiMentioned) personaAlignmentScore = 0;
-  if (personaId === 'busy-founder' && !speedMentioned) personaAlignmentScore = 5;
-  if (personaId === 'price-sensitive' && !costMentioned) personaAlignmentScore = 5;
+  // More flexible: mentioning key concerns = full pts, but focus area matters
+  let personaAlignmentScore = 5; // Base for being in conversation
+  if (personaId === 'skeptical-cfo') {
+    if (roiMentioned) personaAlignmentScore = 10;
+    else if (/financial|budget|investment|cost|return/i.test(transcript))
+      personaAlignmentScore = 7; // Partial credit for financial discussion
+  } else if (personaId === 'busy-founder') {
+    if (speedMentioned) personaAlignmentScore = 10;
+    else if (/timeline|implement|quick|fast/i.test(transcript))
+      personaAlignmentScore = 7;
+  } else if (personaId === 'price-sensitive') {
+    if (costMentioned) personaAlignmentScore = 10;
+    else if (/budget|expense|affordable|affordable|pricing/i.test(transcript))
+      personaAlignmentScore = 7;
+  } else if (personaId === 'drew') {
+    if (/reliability|mttr|incident|uptime|monitoring|observability/i.test(transcript))
+      personaAlignmentScore = 10;
+  }
 
-  // Total Score
+  // Total Score (rebalanced for achievability)
+  // Scoring bands: 0-40 (needs work) | 40-70 (good effort) | 70-85 (strong) | 85-100 (excellent)
   const totalScore = conversationalScore + discoveryScore + empathyScore + personaAlignmentScore;
 
   return {
@@ -237,6 +328,13 @@ function analyzeMetrics(transcript: string, conversationHistory: Array<{ role: s
     speedMentioned,
     costMentioned,
     personaAlignmentScore,
+    objectionsRaised,
+    objectionsHandled,
+    objectionScore,
+    nextStepConfirmed,
+    calendarInviteAccepted,
+    mutualActionPlan,
+    closingScore,
     totalScore,
   };
 }
@@ -251,7 +349,7 @@ export async function POST(request: Request) {
       historyLength: body.conversationHistory?.length,
     });
 
-    const { transcript, personaId, conversationHistory, productBrief } = body;
+    const { transcript, personaId, conversationHistory, productBrief, product } = body;
 
     if (!transcript || !personaId) {
       return Response.json(
@@ -268,7 +366,7 @@ export async function POST(request: Request) {
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
       {
         role: 'system',
-        content: getPersonaSystemPrompt(personaId),
+        content: getPersonaSystemPrompt(personaId, product),
       },
       ...conversationHistory,
       {

@@ -68,65 +68,62 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      {/* Background */}
-      <div className="fixed inset-0 z-0" style={{ backgroundImage: 'url(/circuitbw.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', pointerEvents: 'none' }}></div>
+      {/* Header Section with Background Pattern */}
+      <div className="border-b-4 border-black" style={{ backgroundImage: 'url(/circuitbw.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div className="bg-white/95 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-8 py-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+              <h1 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
+                DASHBOARD
+              </h1>
+              <button
+                onClick={handleNewCall}
+                className="border-4 border-black bg-black text-white font-serif font-black text-lg uppercase px-8 py-4 flex items-center gap-3 transition-all"
+                style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,0.3)' }}
+                onMouseDown={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(6px, 6px)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                }}
+                onMouseUp={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,0.3)';
+                }}
+              >
+                NEW CALL
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
 
-      {/* Content overlay */}
-      <div className="relative z-10">
-      {/* Header with borders */}
-      <div className="border-b-4 border-black bg-white">
-        <div className="max-w-7xl mx-auto px-8 py-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
-            <h1 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
-              DASHBOARD
-            </h1>
-            <button
-              onClick={handleNewCall}
-              className="border-4 border-black bg-black text-white font-serif font-black text-lg uppercase px-8 py-4 flex items-center gap-3 transition-all"
-              style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,0.3)' }}
-              onMouseDown={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.transform = 'translate(6px, 6px)';
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-              }}
-              onMouseUp={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,0.3)';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,0.3)';
-              }}
-            >
-              NEW CALL
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Stats Grid */}
-          <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-4">Stats</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="border-4 border-black p-4" style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.2)' }}>
-              <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-2">Total Calls</p>
-              <p className="text-3xl font-black">{stats.totalCalls}</p>
-            </div>
-            <div className="border-4 border-black p-4" style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.2)' }}>
-              <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-2">Avg Score</p>
-              <p className="text-3xl font-black">{stats.avgScore}</p>
-            </div>
-            <div className="border-4 border-black p-4" style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.2)' }}>
-              <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-2">Best Score</p>
-              <p className="text-3xl font-black">{stats.bestScore}</p>
-            </div>
-            <div className="border-4 border-black p-4" style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.2)' }}>
-              <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-2">Total Time</p>
-              <p className="text-3xl font-black">{Math.floor(stats.totalTime / 60)}m</p>
+            {/* Stats Grid */}
+            <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-4">Stats</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="border-4 border-black p-4 bg-white" style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.2)' }}>
+                <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-2">Total Calls</p>
+                <p className="text-3xl font-black">{stats.totalCalls}</p>
+              </div>
+              <div className="border-4 border-black p-4 bg-white" style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.2)' }}>
+                <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-2">Avg Score</p>
+                <p className="text-3xl font-black">{stats.avgScore}</p>
+              </div>
+              <div className="border-4 border-black p-4 bg-white" style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.2)' }}>
+                <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-2">Best Score</p>
+                <p className="text-3xl font-black">{stats.bestScore}</p>
+              </div>
+              <div className="border-4 border-black p-4 bg-white" style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.2)' }}>
+                <p className="font-mono text-xs uppercase font-bold tracking-widest text-gray-600 mb-2">Total Time</p>
+                <p className="text-3xl font-black">{Math.floor(stats.totalTime / 60)}m</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Calls Section */}
-      <div className="max-w-7xl mx-auto px-8 py-12 bg-white">
+      <div className="max-w-7xl mx-auto px-8 py-12">
         <div className="flex items-center justify-between gap-6 mb-8">
           <h2 className="font-serif text-3xl md:text-4xl font-black uppercase tracking-tighter" style={{ letterSpacing: '-0.02em' }}>
             CALLS
@@ -193,7 +190,7 @@ export default function DashboardPage() {
               <div
                 key={call.id}
                 onClick={() => handleViewCall(call.id)}
-                className="border-4 border-black p-6 cursor-pointer transition-all duration-150"
+                className="border-4 border-black p-6 cursor-pointer transition-all duration-150 bg-white"
                 style={{
                   boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.2)',
                 }}
@@ -238,7 +235,6 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
-      </div>
       </div>
     </div>
   );

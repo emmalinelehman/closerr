@@ -1,7 +1,6 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, History } from 'lucide-react';
 
 export function DashboardNav() {
   const pathname = usePathname();
@@ -11,43 +10,40 @@ export function DashboardNav() {
   const isHistory = pathname === '/history';
 
   return (
-    <nav className="border-b-4 border-[#000000] bg-white sticky top-0 z-20">
-      <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-        <div className="text-2xl font-bold tracking-tighter uppercase font-serif" style={{ letterSpacing: '-0.02em' }}>
+    <nav className="border-b border-gray-300 bg-white sticky top-0 z-20">
+      <div className="max-w-7xl mx-auto px-8 py-3 flex items-center justify-between">
+        <button
+          onClick={() => router.push('/')}
+          className="font-serif text-lg font-black uppercase text-black hover:opacity-70"
+          style={{ letterSpacing: '-0.01em' }}
+        >
           CLOSERR
-        </div>
+        </button>
 
-        <div className="flex gap-2 border-4 border-[#000000] bg-white">
+        <div className="flex gap-1">
           <button
             onClick={() => router.push('/dashboard')}
-            className={`px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider border-r-4 border-[#000000] flex items-center gap-2 transition-all ${
+            className={`px-4 py-2 font-mono text-xs font-bold uppercase transition-all ${
               isDashboard
-                ? 'bg-[#000000] text-white'
-                : 'bg-white text-[#000000] hover:bg-gray-100'
+                ? 'text-black border-b-2 border-black'
+                : 'text-gray-500 hover:text-black'
             }`}
           >
-            <Home className="w-4 h-4" />
             Dashboard
           </button>
           <button
             onClick={() => router.push('/history')}
-            className={`px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+            className={`px-4 py-2 font-mono text-xs font-bold uppercase transition-all ${
               isHistory
-                ? 'bg-[#000000] text-white'
-                : 'bg-white text-[#000000] hover:bg-gray-100'
+                ? 'text-black border-b-2 border-black'
+                : 'text-gray-500 hover:text-black'
             }`}
           >
-            <History className="w-4 h-4" />
             History
           </button>
         </div>
 
-        <button
-          onClick={() => router.push('/')}
-          className="font-mono text-xs font-bold uppercase tracking-wider text-gray-600 hover:text-black"
-        >
-          Home
-        </button>
+        <div className="w-0" />
       </div>
     </nav>
   );
