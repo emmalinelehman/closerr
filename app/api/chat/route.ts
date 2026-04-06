@@ -184,8 +184,8 @@ function analyzeMetrics(transcript: string, conversationHistory: Array<{ role: s
   const totalWords = userWords + userHistoryWords + aiHistoryWords;
   const talkToListen = totalWords > 0 ? Math.round(((userWords + userHistoryWords) / totalWords) * 100) : 50;
 
-  // Calculate WPM
-  const wpm = Math.round((userWords / 5) * 60); // Assume 5 second recording
+  // Calculate WPM (fallback to 0 if no words to avoid Infinity)
+  const wpm = userWords > 0 ? Math.round((userWords / 5) * 60) : 0; // Assume 5 second recording
 
   // Question counting and leveling
   const questionCount = (transcript.match(/\?/g) || []).length;
@@ -263,12 +263,12 @@ function analyzeMetrics(transcript: string, conversationHistory: Array<{ role: s
   let conversationalScore = 25;
   if (talkToListen > 70) conversationalScore -= 5; // Harsh only if really dominant
   if (talkToListen < 30) conversationalScore -= 5; // Lost control
-  if (wpm > 190) conversationalScore -= 3; // Too fast
-  if (wpm < 100) conversationalScore -= 3; // Too slow
+  if (wpm > 190 && wpm > 0) conversationalScore -= 3; // Too fast
+  if (wpm > 0 && wpm < 100) conversationalScore -= 3; // Too slow
   if (questionCount < 5) conversationalScore -= 8; // Very few questions
   if (questionCount < 8) conversationalScore -= 3; // Fewer than ideal but not terrible
   if (questionCount > 30) conversationalScore -= 5; // Machine-gunning
-  conversationalScore = Math.max(0, conversationalScore);
+  conversationalScore = Math.max(0, Math.min(25, conversationalScore)); // Ensure it stays in bounds
 
   // Calculate Discovery Score (25 pts baseline, can exceed for exceptional progress)
   // Rewards progression: L1=1pt, L2=3pts, L3=7pts. Cap at 30 for practicality
@@ -306,35 +306,38 @@ function analyzeMetrics(transcript: string, conversationHistory: Array<{ role: s
 
   // Total Score (rebalanced for achievability)
   // Scoring bands: 0-40 (needs work) | 40-70 (good effort) | 70-85 (strong) | 85-100 (excellent)
-  const totalScore = conversationalScore + discoveryScore + empathyScore + personaAlignmentScore;
+  // Components max out at: conversational=25, discovery=30, empathy=20, alignment=10, objection=10, closing=10 = 105 pts theoretical max
+  // Cap total at 100 for reporting
+  const rawTotalScore = conversationalScore + discoveryScore + empathyScore + personaAlignmentScore + (objectionScore || 0) + (closingScore || 0);
+  const totalScore = Math.max(0, Math.min(100, rawTotalScore));
 
   return {
-    talkToListen,
-    wpm: Math.max(0, Math.min(wpm, 300)),
-    questionCount,
-    conversationalScore,
-    level1Questions,
-    level2Questions,
-    level3Questions,
-    discoveryScore,
-    labelingCount,
-    mirroringCount,
-    calibratedQCount,
-    penaltyCount,
-    severeViolations,
-    empathyScore,
+    talkToListen: Math.max(0, Math.min(100, talkToListen)),
+    wpm: Math.max(0, Math.min(300, wpm)),
+    questionCount: Math.max(0, questionCount),
+    conversationalScore: Math.max(0, Math.min(25, conversationalScore)),
+    level1Questions: Math.max(0, level1Questions),
+    level2Questions: Math.max(0, level2Questions),
+    level3Questions: Math.max(0, level3Questions),
+    discoveryScore: Math.max(0, Math.min(30, discoveryScore)),
+    labelingCount: Math.max(0, labelingCount),
+    mirroringCount: Math.max(0, mirroringCount),
+    calibratedQCount: Math.max(0, calibratedQCount),
+    penaltyCount: Math.max(0, penaltyCount),
+    severeViolations: Math.max(0, severeViolations),
+    empathyScore: Math.max(0, Math.min(20, empathyScore)),
     sentiment,
     roiMentioned,
     speedMentioned,
     costMentioned,
-    personaAlignmentScore,
-    objectionsRaised,
-    objectionsHandled,
-    objectionScore,
+    personaAlignmentScore: Math.max(0, Math.min(10, personaAlignmentScore)),
+    objectionsRaised: Math.max(0, objectionsRaised),
+    objectionsHandled: Math.max(0, objectionsHandled),
+    objectionScore: Math.max(0, Math.min(10, objectionScore)),
     nextStepConfirmed,
     calendarInviteAccepted,
     mutualActionPlan,
-    closingScore,
+    closingScore: Math.max(0, Math.min(10, closingScore)),
     totalScore,
   };
 }
@@ -353,9 +356,23 @@ export async function POST(request: Request) {
 
     if (!transcript || !personaId) {
       return Response.json(
-        { error: 'Missing transcript or personaId' },
+        { error: 'Missing transcript or personaId', timestamp: new Date().toISOString() },
         { status: 400 }
       );
+    }
+
+    // Validate transcript is not empty or just whitespace
+    const trimmedTranscript = transcript.trim();
+    if (trimmedTranscript.length === 0) {
+      return Response.json(
+        { error: 'Transcript cannot be empty. Please say something.' },
+        { status: 400 }
+      );
+    }
+
+    // Warn if transcript is very short (likely transcription error)
+    if (trimmedTranscript.length < 5) {
+      console.warn('⚠️ [BACKEND] Very short transcript detected:', trimmedTranscript);
     }
 
     // Analyze metrics from the user's input
