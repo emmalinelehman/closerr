@@ -197,7 +197,7 @@ export default function ResultsPage() {
                         <h3 className="font-serif text-lg font-black uppercase">Conversational</h3>
                         <p className="font-mono text-xs text-gray-600 mt-1">Control, pacing & engagement</p>
                       </div>
-                      <span className="text-3xl font-black">{latestMetrics.conversationalScore}/25</span>
+                      <span className="text-3xl font-black">{latestMetrics.conversationalScore ?? 0}/25</span>
                     </div>
                     <div className="space-y-3 border-t-2 border-gray-300 pt-4 text-xs">
                       <div className="flex justify-between">
@@ -205,21 +205,21 @@ export default function ResultsPage() {
                           <span className="font-mono text-gray-600">Talk-to-Listen Ratio</span>
                           <p className="text-gray-600 text-xs mt-0.5">Target: 45-55% (you talk/prospect talks)</p>
                         </div>
-                        <span className="font-bold text-lg">{latestMetrics.talkToListen}%</span>
+                        <span className="font-bold text-lg">{latestMetrics.talkToListen ?? 50}%</span>
                       </div>
                       <div className="flex justify-between">
                         <div>
                           <span className="font-mono text-gray-600">Speaking Pace (WPM)</span>
                           <p className="text-gray-600 text-xs mt-0.5">Target: 120-160 words/min</p>
                         </div>
-                        <span className="font-bold text-lg">{latestMetrics.wpm}</span>
+                        <span className="font-bold text-lg">{latestMetrics.wpm ?? 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <div>
                           <span className="font-mono text-gray-600">Questions Asked</span>
                           <p className="text-gray-600 text-xs mt-0.5">Target: 8+ questions per call</p>
                         </div>
-                        <span className="font-bold text-lg">{latestMetrics.questionCount}</span>
+                        <span className="font-bold text-lg">{latestMetrics.questionCount ?? 0}</span>
                       </div>
                     </div>
                   </div>
@@ -237,21 +237,21 @@ export default function ResultsPage() {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="font-mono text-gray-600">Level 1: Current State</span>
-                          <span className="font-mono">{latestMetrics.level1Questions} (1pt each)</span>
+                          <span className="font-mono">{latestMetrics.level1Questions ?? 0} (1pt each)</span>
                         </div>
                         <p className="text-gray-600 text-xs">Learning about their existing situation</p>
                       </div>
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="font-mono text-gray-600">Level 2: Problems</span>
-                          <span className="font-mono">{latestMetrics.level2Questions} (3pts each)</span>
+                          <span className="font-mono">{latestMetrics.level2Questions ?? 0} (3pts each)</span>
                         </div>
                         <p className="text-gray-600 text-xs">Uncovering pain points & challenges</p>
                       </div>
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="font-mono font-bold text-gray-800">Level 3: Impact</span>
-                          <span className="font-mono font-bold">{latestMetrics.level3Questions} (7pts each)</span>
+                          <span className="font-mono font-bold">{latestMetrics.level3Questions ?? 0} (7pts each)</span>
                         </div>
                         <p className="text-gray-600 text-xs">Connecting to business outcomes & emotions</p>
                       </div>
@@ -265,20 +265,20 @@ export default function ResultsPage() {
                         <h3 className="font-serif text-lg font-black uppercase">Empathy</h3>
                         <p className="font-mono text-xs text-gray-600 mt-1">Understanding & tactical skills</p>
                       </div>
-                      <span className="text-3xl font-black">{latestMetrics.empathyScore}/20</span>
+                      <span className="text-3xl font-black">{latestMetrics.empathyScore ?? 0}/20</span>
                     </div>
                     <div className="space-y-3 border-t-2 border-gray-300 pt-4 text-xs">
                       <div className="flex justify-between">
                         <span className="font-mono text-gray-600">Labeling</span>
-                        <span className="font-bold">{latestMetrics.labelingCount} uses (4pts each)</span>
+                        <span className="font-bold">{latestMetrics.labelingCount ?? 0} uses (4pts each)</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-mono text-gray-600">Mirroring</span>
-                        <span className="font-bold">{latestMetrics.mirroringCount} uses (2pts each)</span>
+                        <span className="font-bold">{latestMetrics.mirroringCount ?? 0} uses (2pts each)</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-mono text-gray-600">Calibrated Qs</span>
-                        <span className="font-bold">{latestMetrics.calibratedQCount} uses (4pts each)</span>
+                        <span className="font-bold">{latestMetrics.calibratedQCount ?? 0} uses (4pts each)</span>
                       </div>
                     </div>
                   </div>
@@ -290,25 +290,25 @@ export default function ResultsPage() {
                         <h3 className="font-serif text-lg font-black uppercase">Alignment</h3>
                         <p className="font-mono text-xs text-gray-600 mt-1">Buyer value drivers</p>
                       </div>
-                      <span className="text-3xl font-black">{latestMetrics.personaAlignmentScore}/10</span>
+                      <span className="text-3xl font-black">{latestMetrics.personaAlignmentScore ?? 0}/10</span>
                     </div>
                     <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
                       {personaName.includes('CFO') && (
                         <div className="flex justify-between">
                           <span>ROI Mentioned</span>
-                          <span className="font-bold">{latestMetrics.roiMentioned ? '✓' : '✗'}</span>
+                          <span className="font-bold">{latestMetrics.roiMentioned ?? false ? '✓' : '✗'}</span>
                         </div>
                       )}
                       {personaName.includes('Founder') && (
                         <div className="flex justify-between">
                           <span>Speed Mentioned</span>
-                          <span className="font-bold">{latestMetrics.speedMentioned ? '✓' : '✗'}</span>
+                          <span className="font-bold">{latestMetrics.speedMentioned ?? false ? '✓' : '✗'}</span>
                         </div>
                       )}
                       {personaName.includes('SMB') && (
                         <div className="flex justify-between">
                           <span>Cost Mentioned</span>
-                          <span className="font-bold">{latestMetrics.costMentioned ? '✓' : '✗'}</span>
+                          <span className="font-bold">{latestMetrics.costMentioned ?? false ? '✓' : '✗'}</span>
                         </div>
                       )}
                     </div>
@@ -321,16 +321,16 @@ export default function ResultsPage() {
                         <h3 className="font-serif text-lg font-black uppercase">Objections</h3>
                         <p className="font-mono text-xs text-gray-600 mt-1">Recovery & persuasion</p>
                       </div>
-                      <span className="text-3xl font-black">{latestMetrics.objectionScore}/10</span>
+                      <span className="text-3xl font-black">{latestMetrics.objectionScore ?? 0}/10</span>
                     </div>
                     <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
                       <div className="flex justify-between">
                         <span>Objections Raised</span>
-                        <span className="font-mono">{latestMetrics.objectionsRaised}</span>
+                        <span className="font-mono">{latestMetrics.objectionsRaised ?? 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Objections Handled</span>
-                        <span className="font-bold">{latestMetrics.objectionsHandled}</span>
+                        <span className="font-bold">{latestMetrics.objectionsHandled ?? 0}</span>
                       </div>
                     </div>
                   </div>
@@ -342,20 +342,20 @@ export default function ResultsPage() {
                         <h3 className="font-serif text-lg font-black uppercase">Closing</h3>
                         <p className="font-mono text-xs text-gray-600 mt-1">Next steps & commitment</p>
                       </div>
-                      <span className="text-3xl font-black">{latestMetrics.closingScore}/10</span>
+                      <span className="text-3xl font-black">{latestMetrics.closingScore ?? 0}/10</span>
                     </div>
                     <div className="space-y-2 border-t-2 border-gray-300 pt-4 text-sm">
                       <div className="flex justify-between">
                         <span>Next Step Confirmed</span>
-                        <span className="font-bold">{latestMetrics.nextStepConfirmed ? '✓' : '✗'}</span>
+                        <span className="font-bold">{latestMetrics.nextStepConfirmed ?? false ? '✓' : '✗'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Calendar Invite</span>
-                        <span className="font-bold">{latestMetrics.calendarInviteAccepted ? '✓' : '—'}</span>
+                        <span className="font-bold">{latestMetrics.calendarInviteAccepted ?? false ? '✓' : '—'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Mutual Action Plan</span>
-                        <span className="font-bold">{latestMetrics.mutualActionPlan ? '✓' : '—'}</span>
+                        <span className="font-bold">{latestMetrics.mutualActionPlan ?? false ? '✓' : '—'}</span>
                       </div>
                     </div>
                   </div>
