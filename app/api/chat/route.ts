@@ -399,13 +399,33 @@ export async function POST(request: Request) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     console.error('❌ [BACKEND] Error stack:', error instanceof Error ? error.stack : 'no stack');
     console.error('❌ [BACKEND] Full error object:', JSON.stringify(error, null, 2));
+
+    // Determine error type and provide specific guidance
+    let userMessage = 'Failed to generate response';
+    let status = 500;
+
+    if (errorMsg.includes('timeout') || errorMsg.includes('timed out')) {
+      userMessage = 'Response took too long. Please try again or make your last message shorter.';
+      status = 408; // Request Timeout
+    } else if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
+      userMessage = 'OpenAI rate limit reached. Please wait a moment and try again.';
+      status = 429;
+    } else if (errorMsg.includes('authentication') || errorMsg.includes('401') || errorMsg.includes('unauthorized')) {
+      userMessage = 'Authentication error. Please check server configuration.';
+      status = 401;
+    } else if (errorMsg.includes('model') || errorMsg.includes('gpt-4o')) {
+      userMessage = 'The AI model is not available. Please try again later.';
+      status = 503; // Service Unavailable
+    }
+
     return Response.json(
       {
-        error: 'Failed to generate response',
+        error: userMessage,
         details: errorMsg,
+        type: userMessage === 'Failed to generate response' ? 'unknown' : 'known',
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status }
     );
   }
 }

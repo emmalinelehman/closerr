@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
     if (!personaId) {
       return Response.json(
-        { error: 'Missing personaId' },
+        { error: 'Missing personaId', timestamp: new Date().toISOString() },
         { status: 400 }
       );
     }
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     const greeting = getGreeting(personaId);
     console.log('👋 [GREETING] Generated:', greeting);
 
-    return Response.json({ greeting });
+    return Response.json({ greeting, timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('❌ [GREETING] Error:', error);
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       {
         error: 'Failed to generate greeting',
         details: errorMsg,
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     );

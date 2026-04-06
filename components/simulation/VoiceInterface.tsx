@@ -52,6 +52,27 @@ async function playAudioBlob(blob: Blob): Promise<void> {
   });
 }
 
+// Helper for API calls with timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 30000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeoutMs}ms. Please try again.`);
+    }
+    throw error;
+  }
+}
+
 export default function VoiceInterface({
   personaId,
   personaName,
@@ -109,31 +130,39 @@ export default function VoiceInterface({
     try {
       // Fetch initial greeting
       console.log('👋 [UI] Fetching greeting');
-      const greetingResponse = await fetch('/api/greeting', {
+      const greetingResponse = await fetchWithTimeout('/api/greeting', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           personaId,
           personaName,
         }),
-      });
+      }, 15000);
 
       if (!greetingResponse.ok) {
-        throw new Error('Failed to fetch greeting');
+        const errorData = await greetingResponse.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ||
+          `Server error (${greetingResponse.status}). Please refresh and try again.`
+        );
       }
 
       const { greeting } = await greetingResponse.json();
       console.log('👋 [UI] Got greeting:', greeting);
 
       // Convert greeting to speech
-      const ttsResponse = await fetch('/api/tts', {
+      const ttsResponse = await fetchWithTimeout('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: greeting }),
-      });
+      }, 20000);
 
       if (!ttsResponse.ok) {
-        throw new Error('Failed to generate speech for greeting');
+        const errorData = await ttsResponse.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ||
+          `Speech service error (${ttsResponse.status}). Please try again.`
+        );
       }
 
       const audioBlob = await ttsResponse.blob();
@@ -182,7 +211,7 @@ export default function VoiceInterface({
         ? `Company: ${productBrief.company}. Product: ${productBrief.product}. Pricing: ${productBrief.pricing}. Implementation: ${productBrief.implementation}. Results: ${productBrief.results}. Audience: ${productBrief.audience}.`
         : undefined;
 
-      const chatResponse = await fetch('/api/chat', {
+      const chatResponse = await fetchWithTimeout('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -192,10 +221,14 @@ export default function VoiceInterface({
           productBrief: productBriefString,
           product: selectedProduct,
         }),
-      });
+      }, 45000); // Chat can take longer
 
       if (!chatResponse.ok) {
-        throw new Error(`Chat API failed: ${chatResponse.statusText}`);
+        const errorData = await chatResponse.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ||
+          `Chat failed (${chatResponse.status}). ${chatResponse.status === 408 ? 'Please try again or make your last message shorter.' : 'Please try again.'}`
+        );
       }
 
       const chatData = await chatResponse.json();
@@ -216,16 +249,19 @@ export default function VoiceInterface({
 
       try {
         // Request audio from ElevenLabs via backend
-        const ttsResponse = await fetch('/api/tts', {
+        const ttsResponse = await fetchWithTimeout('/api/tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: aiReply }),
-        });
+        }, 20000);
 
         if (!ttsResponse.ok) {
-          const errorData = await ttsResponse.json();
+          const errorData = await ttsResponse.json().catch(() => ({}));
           console.error('🔊 [UI] TTS API error response:', errorData);
-          throw new Error(`TTS failed: ${errorData.error} - ${errorData.details || ''}`);
+          throw new Error(
+            errorData.error ||
+            `Speech generation failed (${ttsResponse.status}). Please try again.`
+          );
         }
 
         const audioBlob = await ttsResponse.blob();

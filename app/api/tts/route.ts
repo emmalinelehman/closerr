@@ -51,11 +51,24 @@ export async function POST(request: Request) {
         voiceId: ELEVENLABS_VOICE_ID,
         hasApiKey: !!ELEVENLABS_API_KEY,
       });
+
+      // Provide user-friendly error messages
+      let userMessage = 'Failed to generate speech';
+      if (elevenLabsResponse.status === 401 || elevenLabsResponse.status === 403) {
+        userMessage = 'Speech service authentication failed. Please check configuration.';
+      } else if (elevenLabsResponse.status === 429) {
+        userMessage = 'Speech service rate limit reached. Please wait and try again.';
+      } else if (elevenLabsResponse.status === 400) {
+        userMessage = 'Invalid text for speech generation. Please try rephrasing.';
+      } else if (elevenLabsResponse.status >= 500) {
+        userMessage = 'Speech service is temporarily unavailable. Please try again.';
+      }
+
       return Response.json(
         {
-          error: 'ElevenLabs API error',
-          status: elevenLabsResponse.status,
+          error: userMessage,
           details: errorText,
+          status: elevenLabsResponse.status,
           timestamp: new Date().toISOString(),
         },
         { status: elevenLabsResponse.status }
