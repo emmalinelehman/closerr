@@ -99,7 +99,7 @@ export const PERSONA_CONTEXTS: Record<string, PersonaContext> = {
 
   'busy-founder': {
     id: 'busy-founder',
-    name: 'Marcus Webb',
+    name: 'Maya Webb',
     title: 'Founder & CEO',
     company: 'TechFlow',
     industry: 'B2B Developer Tools',
@@ -152,7 +152,7 @@ export const PERSONA_CONTEXTS: Record<string, PersonaContext> = {
     communicationStyle:
       'Direct, impatient with process talk, appreciates speed and clarity',
     objectionStyle:
-      'Skeptical of vendor pitches, but fair if you understand his world',
+      'Skeptical of vendor pitches, but fair if you understand her world',
   },
 
   'price-sensitive': {
@@ -214,7 +214,7 @@ export const PERSONA_CONTEXTS: Record<string, PersonaContext> = {
 
   drew: {
     id: 'drew',
-    name: 'Drew Sullivan',
+    name: 'Dani Sullivan',
     title: 'VP Product Engineering',
     company: 'CloudNine',
     industry: 'Infrastructure SaaS',

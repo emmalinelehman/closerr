@@ -46,16 +46,14 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-white text-black font-sans flex flex-col">
       {/* NAVIGATION */}
-      <nav className="border-b border-gray-300 py-3 px-8">
-        <div className="max-w-7xl mx-auto">
-          <button
-            onClick={() => router.push('/')}
-            className="text-lg font-black uppercase font-serif hover:opacity-70 transition-opacity"
-            style={{ letterSpacing: '-0.01em' }}
-          >
-            CLOSERR
-          </button>
-        </div>
+      <nav className="border-b border-gray-200 py-4 px-8">
+        <button
+          onClick={() => router.push('/')}
+          className="text-lg font-black uppercase font-serif hover:opacity-70 transition-opacity"
+          style={{ letterSpacing: '-0.01em' }}
+        >
+          CLOSERR
+        </button>
       </nav>
 
       {/* MAIN CONTENT */}
@@ -63,8 +61,8 @@ export default function SignupPage() {
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="mb-12 text-center">
-            <h1 className="font-serif text-4xl md:text-5xl font-black uppercase tracking-tighter mb-3" style={{ letterSpacing: '-0.02em' }}>
-              SIGN UP
+            <h1 className="font-serif text-5xl font-black uppercase mb-3" style={{ letterSpacing: '-0.02em' }}>
+              Sign Up
             </h1>
             <p className="font-mono text-sm uppercase tracking-wider text-gray-600">
               Start your sales training journey
@@ -72,7 +70,7 @@ export default function SignupPage() {
           </div>
 
           {/* Form Container */}
-          <div className="border-4 border-[#000000] bg-white p-8" style={{ boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }}>
+          <div className="border border-gray-200 bg-white rounded-lg p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Name Input */}
               <div>
@@ -84,8 +82,7 @@ export default function SignupPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full border-4 border-[#000000] px-4 py-3 font-mono text-sm focus:outline-none bg-white"
-                  style={{ boxShadow: '2px 2px 0px 0px rgba(0,0,0,0.1)' }}
+                  className="w-full border border-gray-300 px-4 py-2 font-mono text-sm focus:outline-none focus:border-gray-400 bg-white rounded-md transition-colors"
                   required
                 />
               </div>
@@ -100,8 +97,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full border-4 border-[#000000] px-4 py-3 font-mono text-sm focus:outline-none bg-white"
-                  style={{ boxShadow: '2px 2px 0px 0px rgba(0,0,0,0.1)' }}
+                  className="w-full border border-gray-300 px-4 py-2 font-mono text-sm focus:outline-none focus:border-gray-400 bg-white rounded-md transition-colors"
                   required
                 />
               </div>
@@ -116,8 +112,7 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full border-4 border-[#000000] px-4 py-3 font-mono text-sm focus:outline-none bg-white"
-                  style={{ boxShadow: '2px 2px 0px 0px rgba(0,0,0,0.1)' }}
+                  className="w-full border border-gray-300 px-4 py-2 font-mono text-sm focus:outline-none focus:border-gray-400 bg-white rounded-md transition-colors"
                   required
                 />
               </div>
@@ -132,15 +127,14 @@ export default function SignupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full border-4 border-[#000000] px-4 py-3 font-mono text-sm focus:outline-none bg-white"
-                  style={{ boxShadow: '2px 2px 0px 0px rgba(0,0,0,0.1)' }}
+                  className="w-full border border-gray-300 px-4 py-2 font-mono text-sm focus:outline-none focus:border-gray-400 bg-white rounded-md transition-colors"
                   required
                 />
               </div>
 
               {/* Error Message */}
               {error && (
-                <div className="border-4 border-red-500 bg-red-50 p-4">
+                <div className="border border-red-300 bg-red-50 rounded-md p-3">
                   <p className="font-mono text-xs uppercase font-bold text-red-600">{error}</p>
                 </div>
               )}
@@ -149,34 +143,15 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full border-4 border-black bg-black text-white font-serif font-black text-lg uppercase px-8 py-4 flex items-center justify-center gap-3 transition-all disabled:opacity-50"
-                style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,0.3)' }}
-                onMouseDown={(e) => {
-                  if (!isLoading) {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'translate(6px, 6px)';
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                  }
-                }}
-                onMouseUp={(e) => {
-                  if (!isLoading) {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isLoading) {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'translate(0, 0)';
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,1)';
-                  }
-                }}
+                className="w-full bg-black text-white font-serif font-black text-sm uppercase px-6 py-3 flex items-center justify-center gap-2 rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
               >
-                {isLoading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
-                {!isLoading && <ArrowRight className="w-5 h-5" />}
+                {isLoading ? 'Creating account...' : 'Create Account'}
+                {!isLoading && <ArrowRight className="w-4 h-4" />}
               </button>
             </form>
 
             {/* Divider */}
-            <div className="border-t-2 border-gray-300 my-6"></div>
+            <div className="border-t border-gray-200 my-6"></div>
 
             {/* Login Link */}
             <p className="text-center font-mono text-sm text-gray-600">
@@ -200,8 +175,8 @@ export default function SignupPage() {
       </div>
 
       {/* FOOTER */}
-      <footer className="border-t-4 border-[#000000] py-8 px-8">
-        <div className="max-w-7xl mx-auto text-center font-mono text-xs uppercase font-bold tracking-widest">
+      <footer className="border-t border-gray-200 py-8 px-8">
+        <div className="text-center font-mono text-xs uppercase font-bold tracking-widest text-gray-600">
           CLOSERR © 2024 | AI SALES TRAINING
         </div>
       </footer>

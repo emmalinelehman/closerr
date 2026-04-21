@@ -108,24 +108,32 @@ export default function HowItWorksPage() {
         }
         if (i < rows - 1) output += '\n';
       }
-      if (asciiOverlay) {
-        asciiOverlay.textContent = output;
+      if (asciiRef.current) {
+        asciiRef.current.textContent = output;
       }
     }
 
+    let animationId: NodeJS.Timeout | null = null;
+
     function animate() {
       updateGrid();
-      setTimeout(animate, 200);
+      animationId = setTimeout(animate, 100);
     }
 
     animate();
+
+    return () => {
+      if (animationId) {
+        clearTimeout(animationId);
+      }
+    };
   }, []);
 
   return (
     <div className="min-h-screen bg-white text-black">
       {/* NAVIGATION */}
-      <nav className="border-b border-gray-300 px-8 bg-white z-50 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <nav className="border-b border-gray-200 px-8 bg-white z-50 py-4">
+        <div className="flex items-center justify-between">
           <button
             onClick={() => router.push('/')}
             className="font-serif text-lg font-black uppercase hover:opacity-70 transition-opacity"
@@ -144,7 +152,7 @@ export default function HowItWorksPage() {
 
       {/* HERO */}
       <section
-        className="border-b border-gray-300 h-screen px-8 md:px-12 relative animate-fade-in flex items-center"
+        className="border-b border-gray-200 h-screen px-8 md:px-12 relative animate-fade-in flex items-center"
         style={{
           backgroundImage: 'url(/newbarbs.jpg)',
           backgroundSize: 'cover',
@@ -174,7 +182,7 @@ export default function HowItWorksPage() {
 
       {/* THE PROCESS */}
       <section
-        className="border-b border-gray-300 py-24 md:py-32 px-8 md:px-12 relative"
+        className="border-b border-gray-200 py-24 md:py-32 px-8 md:px-12 relative"
         style={{
           backgroundImage: 'url(/phoneascii.png)',
           backgroundSize: 'cover',
@@ -203,7 +211,7 @@ export default function HowItWorksPage() {
                   Pick from three distinct personas: the skeptical CFO, the busy founder, or the cost-conscious SMB owner. Each has different priorities, objections, and buying signals.
                 </p>
               </div>
-              <div className="bg-white border-4 border-black p-8 text-center">
+              <div className="bg-gray-50 border border-gray-200 p-6 rounded-lg text-center">
                 <p className="font-serif text-base uppercase font-bold text-black mb-4">Personas Available</p>
                 <p className="text-3xl font-black mb-4">3 Types</p>
                 <p className="text-base text-gray-700 leading-relaxed">Realistic buyer behaviors</p>
@@ -212,7 +220,7 @@ export default function HowItWorksPage() {
 
             {/* Step 2 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center md:order-last">
-              <div className="bg-white border-4 border-black p-8 text-center md:order-last">
+              <div className="bg-gray-50 border border-gray-200 p-6 rounded-lg text-center md:order-last">
                 <p className="font-serif text-base uppercase font-bold text-black mb-4">Real-Time Tracking</p>
                 <p className="text-3xl font-black mb-4">5+ Metrics</p>
                 <p className="text-base text-gray-700 leading-relaxed">Talk ratio, pacing, sentiment, questions asked</p>
@@ -247,7 +255,7 @@ export default function HowItWorksPage() {
                   After each call, see detailed feedback on your performance. Track how you handle objections, control the pace of the conversation, and build rapport. Build your skill over time.
                 </p>
               </div>
-              <div className="bg-white border-4 border-black p-8 text-center">
+              <div className="bg-gray-50 border border-gray-200 p-6 rounded-lg text-center">
                 <p className="font-serif text-base uppercase font-bold text-black mb-4">Scored on</p>
                 <p className="text-3xl font-black mb-4">/100</p>
                 <p className="text-base text-gray-700 leading-relaxed">Comprehensive sales acumen</p>
@@ -258,7 +266,7 @@ export default function HowItWorksPage() {
       </section>
 
       {/* KEY FEATURES */}
-      <section className="border-b border-gray-300 py-24 md:py-32 px-8 md:px-12 bg-gray-950 relative overflow-hidden">
+      <section className="border-b border-gray-200 py-24 md:py-32 px-8 md:px-12 bg-gray-950 relative overflow-hidden">
         {/* ASCII Overlay */}
         <div
           style={{
@@ -328,7 +336,7 @@ export default function HowItWorksPage() {
                 description: 'Run unlimited simulations. Each buyer type teaches you something different about selling.',
               },
             ].map((feature, idx) => (
-              <div key={idx} className="border-4 border-black p-8 bg-white">
+              <div key={idx} className="border border-gray-200 p-6 bg-white rounded-lg">
                 <div className="flex items-start gap-3 mb-4">
                   <CheckCircle className="w-6 h-6 text-black flex-shrink-0 mt-1" />
                   <h3 className="font-serif text-lg font-bold uppercase" style={{ letterSpacing: '-0.01em' }}>
@@ -343,7 +351,7 @@ export default function HowItWorksPage() {
       </section>
 
       {/* METRICS EXPLAINED */}
-      <section className="border-b border-gray-300 py-24 md:py-32 px-8 md:px-12">
+      <section className="border-b border-gray-200 py-24 md:py-32 px-8 md:px-12">
         <div className="max-w-7xl mx-auto">
           <h2 className="font-serif text-4xl md:text-5xl font-bold uppercase tracking-tight mb-16" style={{ letterSpacing: '-0.01em' }}>
             What We Measure
@@ -376,7 +384,7 @@ export default function HowItWorksPage() {
                 description: 'A holistic rating that combines all metrics into your sales acumen score.',
               },
             ].map((item, idx) => (
-              <div key={idx} className="bg-white border-4 border-black p-8 text-center">
+              <div key={idx} className="bg-gray-50 border border-gray-200 p-6 rounded-lg text-center">
                 <p className="font-serif text-base uppercase font-bold text-gray-600 mb-4">{item.metric}</p>
                 <p className="text-gray-700 leading-relaxed text-base">{item.description}</p>
               </div>
@@ -387,7 +395,7 @@ export default function HowItWorksPage() {
 
       {/* CTA */}
       <section
-        className="border-b border-gray-300 py-24 md:py-32 px-8 md:px-12 text-white relative"
+        className="border-b border-gray-200 py-24 md:py-32 px-8 md:px-12 text-white relative"
         style={{
           backgroundImage: 'url(/graphite.jpg)',
           backgroundSize: 'cover',
